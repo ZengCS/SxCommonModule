@@ -1,0 +1,25 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="cn.sxw.floatlog">
+
+    <!--悬浮窗口权限-->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!--锁屏后台运行-->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".AlertWindowPermissionGrantActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:launchMode="singleInstance"
+            android:screenOrientation="landscape"
+            android:theme="@style/StyleActivityTransparent" />
+
+        <service android:name=".LogService" />
+
+    </application>
+
+</manifest>

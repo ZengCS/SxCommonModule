@@ -1,0 +1,19 @@
+<resources>
+    <string name="get_info_failed">错误的请求地址</string>
+    <string name="json_format_error">数据格式错误！</string>
+    <string name="server_error">服务器异常，请重试！</string>
+    <string name="internal_server_error">内部服务器错误，请重试！</string>
+    <string name="login_time_out">登录过期，请重新登录！</string>
+    <string name="network_access_error">没有连接互联网，请连接网络后重试~</string>
+
+    <string name="txt_loading_common">数据加载中&#8230;</string>
+    <string name="txt_load_data_error">数据加载失败，请稍后重试！</string>
+    <string name="txt_ok">确定</string>
+    <string name="txt_i_know">我知道了</string>
+    <string name="txt_cancel">取消</string>
+    <string name="txt_exit">退出</string>
+    <string name="txt_settings_wlan">网络设置</string>
+    <string name="txt_title_net_error">网络错误</string>
+    <string name="txt_next_step">下一步</string>
+    <string name="txt_loading">加载中&#8230;</string>
+</resources>

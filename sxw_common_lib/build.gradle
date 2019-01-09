@@ -1,0 +1,71 @@
+apply plugin: 'com.android.library'
+//apply plugin: 'com.chenenyu.router'
+
+android {
+    compileSdkVersion rootProject.ext.android.compileSdkVersion
+    buildToolsVersion rootProject.ext.android.buildToolsVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.android.minSdkVersion
+        targetSdkVersion rootProject.ext.android.targetSdkVersion
+        versionCode rootProject.ext.android.versionCode
+        versionName rootProject.ext.android.versionName
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    api fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    api var.appcompat_v7
+    api var.constraintLayout
+    api var.design
+    androidTestImplementation var.junit
+
+    // api var.autolayout
+    api var.xutils
+    api var.universal_imageloader
+    api var.multidex
+    api var.dagger
+    api var.gson
+    api var.androidannotations
+    api var.eventBus
+    api var.okHttp3
+    api var.okGo
+    api var.fastJson
+    api var.fastJsonAndroid
+    api var.timber//日志工具
+    api var.umengAnalytics//友盟统计分析
+    // Glide
+    api var.glide
+    // annotationProcessor var.glideCompiler
+    // permission 3.1.0
+    implementation var.permissionsDispatcher
+    annotationProcessor var.permissionsDispatcherProcessor
+    // 浮窗日志-
+    api project(':autolayout')
+
+    annotationProcessor var.dagger_compiler
+    annotationProcessor var.androidannotations_compiler
+
+    // RecyclerView适配器
+    api 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.44'
+
+//    api('com.aliyun.ams:alicloud-android-hotfix:3.0.0') {
+//        exclude(module: 'alicloud-android-utdid')
+//    }
+}

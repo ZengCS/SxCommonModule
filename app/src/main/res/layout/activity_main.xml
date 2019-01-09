@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    tools:context="cn.sxw.android.lib.MainActivity">
+
+    <Button
+        android:id="@+id/id_btn_runtime_permission"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="openPermissionActivity"
+        android:text="运行时权限" />
+
+    <Button
+        android:id="@+id/id_btn_empty_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="openEmptyActivity"
+        android:text="示例Activity" />
+</LinearLayout>
