@@ -1,5 +1,7 @@
 package cn.sxw.android.base.okhttp;
 
+import java.util.List;
+
 /**
  * @author zcs@sxw.cn
  * @version v1.0
@@ -8,7 +10,9 @@ package cn.sxw.android.base.okhttp;
 public interface HttpCallback<T, V> {
     void onStart(T req);
 
-    void onResult(T req, V result);
+    void onResultWithObj(T req, V result);
+
+    void onResultWithList(T req, List<V> result);
 
     void onFail(T req, String code, String msg);
 

@@ -27,6 +27,8 @@ public abstract class BaseRequest {
     private Activity activity;
     @JSONField(serialize = false)
     private TypeToken typeToken;
+    @JSONField(serialize = false)
+    private Class clz;
 
     protected abstract <T, V> HttpCallback<T, V> getHttpCallback();
 
@@ -39,8 +41,8 @@ public abstract class BaseRequest {
         try {
             if (paramMap != null) {// 组装url完整地址
                 HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
-                        .scheme("http")
-                        .host("sxw.cn")
+                        .scheme(HttpManager.getInstance().getScheme())
+                        .host(HttpManager.getInstance().getHost())
                         .addPathSegments(api);
                 for (String key : paramMap.keySet()) {
                     urlBuilder.addQueryParameter(key, paramMap.get(key));
@@ -94,12 +96,20 @@ public abstract class BaseRequest {
         this.typeToken = typeToken;
     }
 
-    public void post() {
-        HttpManager.getInstance().postData(this);
+    public Class getClz() {
+        return clz;
     }
 
-    public void get() {
+    public void setClz(Class clz) {
+        this.clz = clz;
+    }
 
+    public void postData() {
+        HttpManager.getInstance().sendPost(this);
+    }
+
+    public void getData() {
+        HttpManager.getInstance().sendGet(this);
     }
 
     public String toJson() {

@@ -1,5 +1,8 @@
 package cn.sxw.android.lib.mvp.view;
 
+import java.util.List;
+
+import cn.sxw.android.base.bean.BlankBean;
 import cn.sxw.android.base.mvp.IViewAdvance;
 
 /**
@@ -8,7 +11,7 @@ import cn.sxw.android.base.mvp.IViewAdvance;
  * Add:成都市天府软件园E3-3F
  */
 public interface IEmptyView extends IViewAdvance {
-    void onRequestSuccess(String data);
+    void onRequestSuccess(List<BlankBean> list);
 
     void onFailed(String msg);
 }

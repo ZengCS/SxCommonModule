@@ -3,10 +3,10 @@ package cn.sxw.android.base.okhttp;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
+import android.support.annotation.NonNull;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,8 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import cn.sxw.android.base.net.bean.BaseResponse;
 import cn.sxw.android.base.ui.BaseApplication;
 import cn.sxw.android.base.utils.BaseLogUtil;
+import cn.sxw.android.base.utils.JTextUtils;
 import cn.sxw.android.base.utils.NetworkUtil;
 import okhttp3.Cache;
 import okhttp3.Call;
@@ -35,20 +37,33 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
- * BaseHttpManager
- *
  * @author zcs@sxw.cn
  * @version v1.0
  * @date 2018/07/16 13:17
  */
-public class BaseHttpManagerAdv {
-    private static BaseHttpManagerAdv httpManager = new BaseHttpManagerAdv();
-    private Handler handler = new Handler(Looper.getMainLooper());
+public class BaseHttpManagerAdv implements OkApiHelper {
+    private static final int METHOD_GET = 0;
+    private static final int METHOD_POST = 1;
+    private static final int METHOD_PUT = 2;
+    private static final int METHOD_DELETE = 3;
 
-    public static BaseHttpManagerAdv instance() {
-        return httpManager;
+    private static BaseHttpManagerAdv sInstance = null;
+    // 公用Handler
+    private Handler mHandler = new Handler(Looper.getMainLooper());
+
+    // 单例控制
+    public static BaseHttpManagerAdv getInstance() {
+        if (sInstance == null) {
+            synchronized (BaseHttpManagerAdv.class) {
+                if (sInstance == null) {
+                    sInstance = new BaseHttpManagerAdv();
+                }
+            }
+        }
+        return sInstance;
     }
 
+    // 设置统一结果处理回调函数
     private OnResultCallback onResultCallback;
 
     public BaseHttpManagerAdv setOnResultCallback(OnResultCallback callback) {
@@ -56,92 +71,111 @@ public class BaseHttpManagerAdv {
         return this;
     }
 
-    public boolean postNew(BaseRequest request) {
-        return post(
-                request.getActivity(),
+    @Override
+    public void sendGet(BaseRequest request) {
+        sendRequest(request.getActivity(),
                 request.getApi(),
                 request.getHeadMap(),
                 request,
-                request.getTypeToken(),
-                request.getHttpCallback());
+                request.getClz(),
+                request.getHttpCallback(),
+                METHOD_GET
+        );
     }
 
-    public <V> boolean post(Activity activity, String url, Map<String, String> headMap, BaseRequest req, TypeToken<V> typeToken, HttpCallback<BaseRequest, V> callback) {
-        if (!NetworkUtil.isConnected(activity)) {
-            if (callback != null && (activity == null || !activity.isFinishing())) {
-                handler.post(() -> callback.onFail(null, HttpCode.NO_NET, "请检查网络是否连接"));
-            }
-            return false;
-        }
+    @Override
+    public void sendPost(@NonNull BaseRequest request) {
+        sendRequest(request.getActivity(),
+                request.getApi(),
+                request.getHeadMap(),
+                request,
+                request.getClz(),
+                request.getHttpCallback(),
+                METHOD_POST
+        );
+    }
 
-        if (callback != null && (activity == null || !activity.isFinishing())) {
-            handler.post(() -> callback.onStart(req));
+    public <V> void sendRequest(Activity activity, String url, Map<String, String> headMap, BaseRequest req,
+                                Class clz, HttpCallback<BaseRequest, V> callback, int methodType) {
+        if (!NetworkUtil.isConnected(activity)) {
+            if (canCallback(activity, callback)) {
+                mHandler.post(() -> callback.onFail(null, HttpCode.NETWORK_ERROR, "请检查网络是否连接"));
+            }
+            return;
+        }
+        if (canCallback(activity, callback)) {
+            // 回调onStart，开发者可在onStart中显示Loading状态
+            mHandler.post(() -> callback.onStart(req));
         }
 
         new Thread(() -> {
             try {
-                String resJson = execute(url, headMap, req.toJson());
+                // 发送请求并得到相应
+                String response = execute(url, headMap, req.toJson(), methodType);
 
-                if (resJson.startsWith("{") && resJson.endsWith("}") || resJson.startsWith("[") && resJson.endsWith("]")) {//是否为Json
-                    if (onResultCallback != null) {
-                        onResultCallback.onResult(resJson);
-                    }
+                // 解析Response
+                if (JTextUtils.isJsonObject(response)) {//是否为Json
+                    if (onResultCallback != null) onResultCallback.onResult(response);
 
-                    ErrorEntity errorEntity = null;
-                    if (resJson.startsWith("{") && resJson.endsWith("}")) {
-                        errorEntity = GsonUtil.fromJson(resJson, ErrorEntity.class);
-                    }
-
-                    if (errorEntity == null || (TextUtils.isEmpty(errorEntity.reason) &&
-                            TextUtils.isEmpty(errorEntity.message) && errorEntity.errors == null)) {
-                        V res = GsonUtil.fromJson(resJson, typeToken.getType());
-                        if (onResultCallback != null) {
-                            onResultCallback.onSuccess(res);
+                    BaseResponse baseResponse = JSON.parseObject(response, BaseResponse.class);
+                    if (baseResponse == null) {
+                        if (canCallback(activity, callback)) {
+                            mHandler.post(() -> callback.onFail(req, HttpCode.SERVER_ERROR, response));
                         }
-                        if (callback != null && (activity == null || !activity.isFinishing())) {
-                            handler.post(() -> callback.onResult(req, res));
+                        return;
+                    }
+                    if (baseResponse.isRequestSuccess()) {
+                        String data = baseResponse.getData();
+                        if (JTextUtils.isJsonObject(data)) {
+                            V bean = JSON.parseObject(data, (Class<V>) clz);
+                            if (onResultCallback != null) onResultCallback.onSuccess(bean);
+                            if (canCallback(activity, callback)) {
+                                mHandler.post(() -> callback.onResultWithObj(req, bean));
+                            }
+                        } else if (JTextUtils.isJsonList(data)) {
+                            List<V> list = JSON.parseArray(data, (Class<V>) clz);
+                            if (onResultCallback != null) onResultCallback.onSuccess(list);
+                            if (canCallback(activity, callback)) {
+                                mHandler.post(() -> callback.onResultWithList(req, list));
+                            }
                         }
                     } else {
-                        if (onResultCallback != null) {
-                            onResultCallback.onError(req, errorEntity);
-                        }
-                        if (callback != null && (activity == null || !activity.isFinishing())) {
-                            ErrorEntity finalErrorEntity = errorEntity;
-                            handler.post(() -> {
-                                String errorCode = HttpCode.OTHER_ERROR;
-                                String errorMsg = finalErrorEntity.reason;
-                                if (finalErrorEntity.errors != null && finalErrorEntity.errors.length > 0) {
-                                    errorCode = finalErrorEntity.errors[0].errorCode;
-                                    errorMsg = finalErrorEntity.errors[0].reason;
-                                }
-                                callback.onFail(req, errorCode, errorMsg);
-                            });
+                        if (onResultCallback != null)
+                            onResultCallback.onError(req, baseResponse.getMessage());
+                        if (canCallback(activity, callback)) {
+                            mHandler.post(() -> callback.onFail(req, String.valueOf(baseResponse.getCode()), baseResponse.getMessage()));
                         }
                     }
+                } else if (response.contains("404") || response.contains("Not Found") || response.contains("NotFound")) {
+                    if (canCallback(activity, callback)) {
+                        mHandler.post(() -> callback.onFail(null, HttpCode.NOT_FOUND, "接口地址不存在!"));
+                    }
+                } else if (response.contains("500") || response.contains("Server Error")) {
+                    if (canCallback(activity, callback)) {
+                        mHandler.post(() -> callback.onFail(null, HttpCode.SERVER_ERROR, "内部服务器错误!"));
+                    }
                 } else {
-                    if (callback != null && (activity == null || !activity.isFinishing())) {
-                        handler.post(() -> callback.onFail(null, HttpCode.NO_JSON, "数据格式不正确!"));
+                    if (canCallback(activity, callback)) {
+                        mHandler.post(() -> callback.onFail(null, HttpCode.JSON_ERROR, "数据格式不正确!"));
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                if (callback != null && (activity == null || !activity.isFinishing())) {
-                    handler.post(() -> callback.onFail(null, HttpCode.NO_HOST, "访问服务器失败！"));
+                if (canCallback(activity, callback)) {
+                    mHandler.post(() -> callback.onFail(null, HttpCode.NOT_FOUND, "接口地址不存在！"));
                 }
             } catch (JsonSyntaxException e) {
                 e.printStackTrace();
-                if (callback != null && (activity == null || !activity.isFinishing())) {
-                    handler.post(() -> callback.onFail(req, HttpCode.NO_JSON, "数据解析格式异常！"));
+                if (canCallback(activity, callback)) {
+                    mHandler.post(() -> callback.onFail(req, HttpCode.JSON_ERROR, "数据解析格式异常！"));
                 }
             }
 
             //运行结束
-            if (callback != null && (activity == null || !activity.isFinishing())) {
-                handler.post(() -> callback.onFinish(req));
+            if (canCallback(activity, callback)) {
+                mHandler.post(() -> callback.onFinish(req));
             }
         }).start();
-
-        return true;
     }
 
     private OkHttpClient httpClient = new OkHttpClient.Builder()
@@ -149,30 +183,47 @@ public class BaseHttpManagerAdv {
             // .writeTimeout(15000, TimeUnit.MILLISECONDS)
             .cache(new Cache(BaseApplication.getContext().getCacheDir(), 10 * 1024 * 1024)).build();
 
-    private String execute(String url, Map<String, String> headMap, String jsonString) throws IOException {
+    private String execute(String url, Map<String, String> headMap, String jsonString, int methodType) throws IOException {
         BaseLogUtil.methodStart("发送Http请求");
         BaseLogUtil.methodStep("API = " + url);
         BaseLogUtil.methodStep("bodyParam = " + jsonString);
 
-        RequestBody builder = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonString);
+        // 设置请求参数体
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonString);
 
-        StringBuilder stringBuilder = new StringBuilder();
-        // stringBuilder.append(url).append("?").append(jsonString);
-        Request.Builder request = new Request.Builder().url(url).post(builder);
+        // 设置Request对象
+        Request.Builder requestBuilder = new Request.Builder().url(url);
+        switch (methodType) {
+            case METHOD_GET:
+                requestBuilder.get();
+                break;
+            case METHOD_POST:
+                requestBuilder.post(requestBody);
+                break;
+            case METHOD_PUT:
+                requestBuilder.put(requestBody);
+                break;
+            case METHOD_DELETE:
+                requestBuilder.delete(requestBody);
+                break;
+        }
+
         if (headMap != null && headMap.size() > 0) {
+            // ********* Log打印Header参数 *********
+            StringBuilder stringBuilder = new StringBuilder();
             for (String key : headMap.keySet()) {
-                request.addHeader(key, headMap.get(key));
+                requestBuilder.addHeader(key, headMap.get(key));
                 stringBuilder.append("\n* --> ").append(key).append(" = ").append(headMap.get(key));
             }
             BaseLogUtil.methodStep("HEADERS" + stringBuilder.toString());
         }
 
-        Response response = httpClient.newCall(request.build()).execute();
+        Response response = httpClient.newCall(requestBuilder.build()).execute();
         ResponseBody body = response.body();
         String bodyString = "";
         if (body != null)
             bodyString = body.string().trim();
-        BaseLogUtil.i("HttpManager", bodyString);
+        BaseLogUtil.methodStep(bodyString);
         return bodyString;
     }
 
@@ -205,85 +256,6 @@ public class BaseHttpManagerAdv {
         String bodyString = response.body().string().trim();
         BaseLogUtil.i("HttpManager", bodyString);
         return bodyString;
-    }
-
-    public <V> boolean postFile(Activity activity, String url, Map<String, String> headMap, BaseRequest req, List<File> files, TypeToken<V> typeToken, HttpCallback<BaseRequest, V> callback) {
-        if (!NetworkUtil.isConnected(activity)) {
-            if (callback != null && (activity == null || !activity.isFinishing())) {
-                handler.post(() -> callback.onFail(null, HttpCode.NO_NET, "请检查网络是否连接"));
-            }
-            return false;
-        }
-
-        if (callback != null && (activity == null || !activity.isFinishing())) {
-            handler.post(() -> callback.onStart(req));
-        }
-
-        new Thread(() -> {
-            try {
-                String resJson = executeFile(url, headMap, req, files);
-
-                if (resJson.startsWith("{") && resJson.endsWith("}") || resJson.startsWith("[") && resJson.endsWith("]")) {//是否为Json
-                    if (onResultCallback != null) {
-                        onResultCallback.onResult(resJson);
-                    }
-
-                    ErrorEntity errorEntity = null;
-                    if (resJson.startsWith("{") && resJson.endsWith("}")) {
-                        errorEntity = GsonUtil.fromJson(resJson, ErrorEntity.class);
-                    }
-
-                    if (errorEntity == null || (TextUtils.isEmpty(errorEntity.reason) &&
-                            TextUtils.isEmpty(errorEntity.message) && errorEntity.errors == null)) {
-                        V res = GsonUtil.fromJson(resJson, typeToken.getType());
-                        if (onResultCallback != null) {
-                            onResultCallback.onSuccess(res);
-                        }
-                        if (callback != null && (activity == null || !activity.isFinishing())) {
-                            handler.post(() -> callback.onResult(req, res));
-
-                        }
-                    } else {
-                        if (onResultCallback != null) {
-                            onResultCallback.onError(req, errorEntity);
-                        }
-                        if (callback != null && (activity == null || !activity.isFinishing())) {
-                            ErrorEntity finalErrorEntity = errorEntity;
-                            handler.post(() -> {
-                                String errorCode = HttpCode.OTHER_ERROR;
-                                String errorMsg = finalErrorEntity.reason;
-                                if (finalErrorEntity.errors != null && finalErrorEntity.errors.length > 0) {
-                                    errorCode = finalErrorEntity.errors[0].errorCode;
-                                    errorMsg = finalErrorEntity.errors[0].reason;
-                                }
-                                callback.onFail(req, errorCode, errorMsg);
-                            });
-                        }
-                    }
-                } else {
-                    if (callback != null && (activity == null || !activity.isFinishing())) {
-                        handler.post(() -> callback.onFail(null, HttpCode.NO_JSON, "数据格式不正确!"));
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                if (callback != null && (activity == null || !activity.isFinishing())) {
-                    handler.post(() -> callback.onFail(null, HttpCode.NO_HOST, "访问服务器失败！"));
-                }
-            } catch (JsonSyntaxException e) {
-                e.printStackTrace();
-                if (callback != null && (activity == null || !activity.isFinishing())) {
-                    handler.post(() -> callback.onFail(req, HttpCode.NO_JSON, "数据解析格式异常！"));
-                }
-            }
-
-            //运行结束
-            if (callback != null && (activity == null || !activity.isFinishing())) {
-                handler.post(() -> callback.onFinish(req));
-            }
-        }).start();
-
-        return true;
     }
 
     private Map<String, String> objectToMap(Object object) {
@@ -319,7 +291,7 @@ public class BaseHttpManagerAdv {
         /**
          * 执行错误回调
          */
-        void onError(Object req, ErrorEntity json);
+        void onError(Object req, String msg);
 
         /**
          * 执行成功回调
@@ -327,24 +299,23 @@ public class BaseHttpManagerAdv {
         void onSuccess(Object json);
     }
 
-    public boolean downloadFile(Activity activity, String req, File outFile, HttpFileCallBack
-            callback) {
+    public boolean downloadFile(Activity activity, String req, File outFile, HttpFileCallBack callback) {
         if (!NetworkUtil.isConnected(activity)) {
-            if (callback != null && (activity == null || !activity.isFinishing())) {
-                handler.post(() -> callback.onFail(null, HttpCode.NO_NET, "请检查网络是否连接"));
+            if (canCallback(activity, callback)) {
+                mHandler.post(() -> callback.onFail(null, HttpCode.NETWORK_ERROR, "请检查网络是否连接"));
             }
             return false;
         }
 
-        if (callback != null && (activity == null || !activity.isFinishing())) {
-            handler.post(() -> callback.onStart(req));
+        if (canCallback(activity, callback)) {
+            mHandler.post(() -> callback.onStart(req));
         }
         FileOutputStream fileOutputStream = null;
         try {
             fileOutputStream = new FileOutputStream(outFile);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            handler.post(() -> callback.onFail(null, HttpCode.FILE_NO_PRE, "文件创建失败！"));
+            mHandler.post(() -> callback.onFail(null, HttpCode.FILE_NO_PRE, "文件创建失败！"));
         }
         Request request = new Request.Builder().url(req).build();
         FileOutputStream outputStream = fileOutputStream;
@@ -358,8 +329,8 @@ public class BaseHttpManagerAdv {
                     @Override
                     public void onFailure(Call call, IOException e) {
 
-                        if (callback != null && (activity == null || !activity.isFinishing())) {
-                            handler.post(() -> callback.onFail(null, HttpCode.NO_HOST, "访问服务器失败！"));
+                        if (canCallback(activity, callback)) {
+                            mHandler.post(() -> callback.onFail(null, HttpCode.NOT_FOUND, "访问服务器失败！"));
                         }
                     }
 
@@ -375,19 +346,19 @@ public class BaseHttpManagerAdv {
                             while ((len = inputStream.read(buffer)) != -1) {
                                 outputStream.write(buffer, 0, len);
                                 down += len;
-                                if (callback != null && (activity == null || !activity.isFinishing())) {
-                                    handler.post(() -> callback.onProgress(down, total));
+                                if (canCallback(activity, callback)) {
+                                    mHandler.post(() -> callback.onProgress(down, total));
                                 }
                             }
 
-                            if (callback != null && (activity == null || !activity.isFinishing())) {
-                                handler.post(() -> callback.onResult(req, outFile));
+                            if (canCallback(activity, callback)) {
+                                mHandler.post(() -> callback.onResultWithObj(req, outFile));
                             }
 
                         } catch (IOException e) {
                             e.printStackTrace();
-                            if (callback != null && (activity == null || !activity.isFinishing())) {
-                                handler.post(() -> callback.onFail(req, HttpCode.FILE_SAVE_ERROR, "下载失败！"));
+                            if (canCallback(activity, callback)) {
+                                mHandler.post(() -> callback.onFail(req, HttpCode.FILE_SAVE_ERROR, "下载失败！"));
                             }
                         } finally {
                             if (outputStream != null) {
@@ -419,8 +390,8 @@ public class BaseHttpManagerAdv {
 //                        }
 
                         //运行结束
-                        if (callback != null && (activity == null || !activity.isFinishing())) {
-                            handler.post(() -> callback.onFinish(req));
+                        if (canCallback(activity, callback)) {
+                            mHandler.post(() -> callback.onFinish(req));
                         }
                     }
                 });
@@ -429,31 +400,8 @@ public class BaseHttpManagerAdv {
         return true;
     }
 
-    public interface HttpCode {
-        String OK = "200";
-        /**
-         * 网络没有接通
-         */
-        String NO_NET = "-1";
-        /**
-         * JSON格式错误
-         */
-        String NO_JSON = "-2";
-        /**
-         * 找不到服务器或者接口
-         */
-        String NO_HOST = "404";
-        /**
-         * 文件创建无权限
-         */
-        String FILE_NO_PRE = "-3";
-        /**
-         * 文件保存失败
-         */
-        String FILE_SAVE_ERROR = "-4";
-        /**
-         * 其他错误
-         */
-        String OTHER_ERROR = "-5";
+    // 是否允许回调
+    private boolean canCallback(Activity activity, HttpCallback callback) {
+        return callback != null && (activity == null || !activity.isFinishing());
     }
 }

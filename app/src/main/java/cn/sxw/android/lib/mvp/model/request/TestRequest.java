@@ -3,8 +3,8 @@ package cn.sxw.android.lib.mvp.model.request;
 import android.app.Activity;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.google.gson.reflect.TypeToken;
 
+import cn.sxw.android.base.bean.BlankBean;
 import cn.sxw.android.base.okhttp.BaseRequest;
 import cn.sxw.android.base.okhttp.HttpCallback;
 
@@ -18,21 +18,24 @@ public class TestRequest extends BaseRequest {
     private String key1;
     private String key2;
     @JSONField(serialize = false)
-    private HttpCallback<TestRequest, String> httpCallback;
+    private HttpCallback<TestRequest, BlankBean> httpCallback;
 
     public TestRequest(Activity activity, String api) {
         super(activity, api);
     }
 
     @Override
-    public HttpCallback<TestRequest, String> getHttpCallback() {
+    public HttpCallback<TestRequest, BlankBean> getHttpCallback() {
         return httpCallback;
     }
 
-    public TestRequest setHttpCallback(HttpCallback<TestRequest, String> httpCallback) {
+    public TestRequest setHttpCallback(HttpCallback<TestRequest, BlankBean> httpCallback) {
         this.httpCallback = httpCallback;
-        setTypeToken(new TypeToken<String>() {
-        });
+        // 不要忘记设置数据类型
+        super.setClz(BlankBean.class);
+
+//        setTypeToken(new TypeToken<String>() {
+//        });
         return this;
     }
 

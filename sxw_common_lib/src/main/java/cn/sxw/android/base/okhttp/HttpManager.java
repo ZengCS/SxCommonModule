@@ -1,6 +1,5 @@
 package cn.sxw.android.base.okhttp;
 
-import android.content.Context;
 import android.text.TextUtils;
 
 import java.util.HashMap;
@@ -13,10 +12,12 @@ import java.util.Map;
  * @version v1.0
  * @date 2018/12/1 21:02
  */
-public class HttpManager {
+public class HttpManager implements OkApiHelper {
     private static HttpManager sHttpManager;
     private BaseHttpManagerAdv mHttp;
     private Map<String, String> headMap = new HashMap<>();
+    private String host;
+    private String scheme = "http";
 
     public static HttpManager getInstance() {
         if (sHttpManager == null) {
@@ -29,16 +30,37 @@ public class HttpManager {
         return sHttpManager;
     }
 
-    public void setHeader(String token, String tokenSsl) {
+    public HttpManager setTokenHeader(String token) {
         headMap.clear();
-        if (!TextUtils.isEmpty(token) && !TextUtils.isEmpty(tokenSsl)) {
+        if (!TextUtils.isEmpty(token)) {
             headMap.put("TOKEN", token);
-            headMap.put("x-kc-ic-authtoken-ssl", tokenSsl);
         }
+        String requestId = System.nanoTime() + "" + (int) (Math.random() * 9000 + 1000);
+        headMap.put("Request-Id", requestId);
+        return sHttpManager;
+    }
+
+    public HttpManager setHost(String host) {
+        this.host = host;
+        return sHttpManager;
+    }
+
+    public HttpManager setScheme(String scheme) {
+        this.scheme = scheme;
+        return sHttpManager;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public String getScheme() {
+        return scheme;
     }
 
     private HttpManager() {
-        mHttp = BaseHttpManagerAdv.instance();
+        mHttp = BaseHttpManagerAdv.getInstance();
+        // 设置通用的结果处理回调，可在这里处理一些全局错误
         mHttp.setOnResultCallback(new BaseHttpManagerAdv.OnResultCallback() {
             @Override
             public void onResult(String json) {
@@ -46,10 +68,8 @@ public class HttpManager {
             }
 
             @Override
-            public void onError(Object req, ErrorEntity error) {
-                if (error.errors != null && error.errors.length > 0) {
-                    // TODO 处理错误逻辑
-                }
+            public void onError(Object req, String msg) {
+                // TODO 处理错误逻辑
             }
 
             @Override
@@ -63,17 +83,15 @@ public class HttpManager {
         return mHttp;
     }
 
-    public void getData(Context context, BaseRequest request) {
-
+    @Override
+    public void sendPost(BaseRequest request) {
+        request.getHeadMap().putAll(headMap);
+        mHttp.sendPost(request);
     }
 
-    public void postData(BaseRequest request){
-        mHttp.postNew(request);
+    @Override
+    public void sendGet(BaseRequest request) {
+        request.getHeadMap().putAll(headMap);
+        mHttp.sendGet(request);
     }
-
-//    public void testRequest(Activity activity, TestReq req, HttpCallback<TestReq, String> callBack) {
-//        mHttp.post(activity, TestReq._URL, headMap, req, new TypeToken<String>() {
-//        }, callBack);
-//    }
-
 }

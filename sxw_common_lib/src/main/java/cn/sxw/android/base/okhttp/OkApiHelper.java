@@ -7,11 +7,7 @@ package cn.sxw.android.base.okhttp;
  */
 
 public interface OkApiHelper {
-    void postData();
+    void sendPost(BaseRequest request);
 
-    void getData();
-
-    void uploadFile();
-
-    void downloadFile();
+    void sendGet(BaseRequest request);
 }

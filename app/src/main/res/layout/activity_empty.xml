@@ -7,10 +7,11 @@
     <!--数据列表-->
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout_common"
-        android:layout_width="0dp"
+        android:layout_width="960px"
         android:layout_height="match_parent"
+        android:layout_marginTop="12px"
+        android:background="@color/mWhite"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -19,16 +20,48 @@
             style="@style/View.RecyclerView" />
     </android.support.v4.widget.SwipeRefreshLayout>
 
-    <!--右下角按钮-->
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/id_iv_refresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="20px"
-        android:src="@mipmap/reset_icon"
-        app:backgroundTint="@color/color_light_blue"
+    <!--模拟按钮组-->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/mGrayF0"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/swipe_refresh_layout_common"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/id_tv_response_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10px"
+            android:text="这里显示具体的Response信息" />
+
+        <Button
+            android:id="@+id/id_btn_get_bean"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="加载单个Bean" />
+
+        <Button
+            android:id="@+id/id_btn_failed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="模拟失败" />
+
+        <Button
+            android:id="@+id/id_btn_error_json"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="模拟JSON错误" />
+
+        <Button
+            android:id="@+id/id_btn_not_found"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="模拟404" />
+    </LinearLayout>
 
     <!--测试AutoConstraintLayout Start-->
     <View

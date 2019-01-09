@@ -4,7 +4,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.chad.library.adapter.base.BaseViewHolder;
 
 import org.androidannotations.annotations.AfterViews;
@@ -13,14 +15,12 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.List;
-import java.util.Random;
 
 import cn.sxw.android.base.adapter.CommonRecyclerAdapter;
 import cn.sxw.android.base.bean.BlankBean;
 import cn.sxw.android.base.di.component.AppComponent;
 import cn.sxw.android.base.imageloader.ImageLoader;
 import cn.sxw.android.base.okhttp.HttpCallback;
-import cn.sxw.android.base.provider.PicProvider;
 import cn.sxw.android.base.utils.JListKit;
 import cn.sxw.android.lib.R;
 import cn.sxw.android.lib.di.component.DaggerEmptyComponent;
@@ -39,6 +39,8 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
     // Views
     @ViewById(R.id.id_rv_empty)
     RecyclerView mRecyclerView;
+    @ViewById(R.id.id_tv_response_info)
+    TextView tvResponse;
 
     @Override
     public void setupActivityComponent(AppComponent appComponent) {
@@ -51,12 +53,24 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
         mImageLoader = mApplication.getAppComponent().imageLoader();
     }
 
-    @Click({R.id.id_iv_refresh})
+    @Click({R.id.id_btn_get_bean,
+            R.id.id_btn_failed,
+            R.id.id_btn_error_json,
+            R.id.id_btn_not_found
+    })
     void onClick(View v) {
         switch (v.getId()) {
-            case R.id.id_iv_refresh:
-                showToast("刷新数据!");
-                onRefresh();
+            case R.id.id_btn_get_bean:
+                getDataByOkhttp("v2/5c35b8e63000009f0021b4a3");
+                break;
+            case R.id.id_btn_failed:
+                getDataByOkhttp("v2/5c35c3b9300000780021b4e9");
+                break;
+            case R.id.id_btn_error_json:
+                getDataByOkhttp("v2/5c35c41a3000007f0021b4ec");
+                break;
+            case R.id.id_btn_not_found:
+                getDataByOkhttp("api2.test.sxw.cn");
                 break;
         }
     }
@@ -70,13 +84,6 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
         // 初始化数据
         onRefresh();
     }
-
-//    private void initData() {
-//        // 初始化列表
-//        initAdapter();
-//        // 初始化数据
-//        onRefresh();
-//    }
 
     private void initAdapter() {
         if (mAdapter == null) {
@@ -96,7 +103,7 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
                         showToast("我是元素内的按钮，position = " + position);
                     });
                     // 设置可见性 true for VISIBLE, false for GONE.
-                    helper.setGone(R.id.id_view_new, !item.isNewest());
+                    helper.setGone(R.id.id_view_new, item.isNewest());
                 }
             };
             // mAdapter.addHeaderView();
@@ -124,29 +131,13 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
     protected void getDataFromNet() {
         mPresenter.getBlankData(currPage);
 
-        getDataByOkhttp();
+        getDataByOkhttp("v2/5c35bf0d3000005f0021b4d8");// 返回列表
     }
 
-    private void getDataByOkhttp() {
-//        OkGo.<String>get("http://swx.cn")
-//                .tag(this)
-//                .headers("", "")
-//                .params("key", "val")
-//                .execute(new StringCallback() {
-//                    @Override
-//                    public void onSuccess(Response<String> response) {
-//                        //注意这里已经是在主线程了
-//                        String data = response.body();//这个就是返回来的结果
-//                    }
-//
-//                    @Override
-//                    public void onError(Response<String> response) {
-//                        super.onError(response);
-//                    }
-//                });
-
+    private void getDataByOkhttp(String api) {
         // 这里注意，只需要输入API名称，无需输入HOST
-        TestRequest request = new TestRequest(this, "v2/api/test/login");
+        // TestRequest request = new TestRequest(this, "v2/5c35b8e63000009f0021b4a3");
+        TestRequest request = new TestRequest(this, api);
         // 这些参数会被转成JSON
         request.setKey1("val1");
         request.setKey2("val2");
@@ -158,52 +149,37 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
         request.getHeadMap().put("header1", "1234567890");
         request.getHeadMap().put("header2", "9874563210");
 
-        request.setHttpCallback(new HttpCallback<TestRequest, String>() {
+        request.setHttpCallback(new HttpCallback<TestRequest, BlankBean>() {
             @Override
             public void onStart(TestRequest req) {
                 showLoading();
             }
 
             @Override
-            public void onResult(TestRequest req, String result) {
+            public void onResultWithObj(TestRequest req, BlankBean bean) {
+                // TODO 如果返回值是对象，这这里处理
+                showToast("数据加载成功，" + JSON.toJSONString(bean));
+                tvResponse.setText("数据加载成功，JSON\n" + JSON.toJSONString(bean));
+            }
 
+            @Override
+            public void onResultWithList(TestRequest req, List<BlankBean> list) {
+                // TODO 如果返回值是列表，在这里处理
+                showToast("加载数据列表成功，共:" + list.size() + "条数据");
+                onRequestSuccess(list);
             }
 
             @Override
             public void onFail(TestRequest req, String code, String msg) {
-                showToast("[errorCode = " + code + "]" + msg);
+                showToast("[ErrorCode = " + code + "]" + msg);
+                tvResponse.setText("[ErrorCode = " + code + "]" + msg);
             }
 
             @Override
             public void onFinish(TestRequest req) {
                 hideLoading();
             }
-        }).post();
-
-//        TestReq req = new TestReq();
-//        req.param1 = "v1";
-//        req.param2 = "v2";
-//        HttpManager.getInstance().testRequest(this, req, new HttpCallback<TestReq, String>() {
-//            @Override
-//            public void onStart(TestReq req) {
-//                showLoading();
-//            }
-//
-//            @Override
-//            public void onResult(TestReq req, String result) {
-//                showToast("数据加载成功");
-//            }
-//
-//            @Override
-//            public void onFail(TestReq req, String code, String msg) {
-//                showToast("[" + code + "]" + msg);
-//            }
-//
-//            @Override
-//            public void onFinish(TestReq req) {
-//                hideLoading();
-//            }
-//        });
+        }).getData();
     }
 
     /**
@@ -215,10 +191,10 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
     }
 
     @Override
-    public void onRequestSuccess(String data) {
+    public void onRequestSuccess(List<BlankBean> list) {
         hideLoading();
         mAdapter.setEnableLoadMore(true);
-        if (TextUtils.isEmpty(data)) {
+        if (list == null || list.size() == 0) {
             if (mItems == null || mItems.size() == 0)
                 mAdapter.setEmptyView(notDataView);
             else {
@@ -232,16 +208,7 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
 
         if (currPage == 1)
             mItems.clear();
-        Random random = new Random();
-        for (int i = 0; i < PAGE_SIZE; i++) {
-            int id = i + (currPage - 1) * PAGE_SIZE + 1;
-            BlankBean bean = new BlankBean(id);
-            bean.setPic(PicProvider.getPicture());
-            bean.setName("Name " + id);
-            bean.setDesc("Description " + id);
-            bean.setNewest(random.nextBoolean());
-            mItems.add(bean);
-        }
+        mItems.addAll(list);
         // 模拟只加载3页数据
         hasMoreData = currPage < 3;
 
