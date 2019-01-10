@@ -15,6 +15,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import cn.sxw.android.base.adapter.CommonRecyclerAdapter;
 import cn.sxw.android.base.bean.BlankBean;
@@ -78,7 +79,9 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
             case R.id.id_btn_bad_gateway:// 自定义接口路径
                 // String urlEncode2 = HttpUrlEncode.encode("http", "api2.test.sxw.cn", "/update/app/list", null);
                 // String urlEncode2 = HttpUrlEncode.encode("http://api2.test.sxw.cn/update/app/list", null);
-                String urlEncode2 = HttpUrlEncode.encode("https://www.baidu.com", null);
+                ConcurrentHashMap<String, String> hashMap = new ConcurrentHashMap<>();
+                hashMap.put("wd", "Android");
+                String urlEncode2 = HttpUrlEncode.encode("https://www.baidu.com/s", hashMap);
                 getDataByOkhttp(urlEncode2);
                 break;
         }

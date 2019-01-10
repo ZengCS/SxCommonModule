@@ -21,12 +21,10 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.sxw.android.base.net.bean.BaseResponse;
-import cn.sxw.android.base.ui.BaseApplication;
 import cn.sxw.android.base.utils.BaseLogUtil;
 import cn.sxw.android.base.utils.JListKit;
 import cn.sxw.android.base.utils.JTextUtils;
 import cn.sxw.android.base.utils.NetworkUtil;
-import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -199,9 +197,12 @@ public class BaseHttpManagerAdv implements OkApiHelper {
     }
 
     private OkHttpClient httpClient = new OkHttpClient.Builder()
-            .connectTimeout(15000, TimeUnit.MILLISECONDS).readTimeout(15000, TimeUnit.MILLISECONDS)
+            .connectTimeout(15000, TimeUnit.MILLISECONDS)
+            .readTimeout(15000, TimeUnit.MILLISECONDS)
             // .writeTimeout(15000, TimeUnit.MILLISECONDS)
-            .cache(new Cache(BaseApplication.getContext().getCacheDir(), 10 * 1024 * 1024)).build();
+            // 禁用缓存
+            // .cache(new Cache(BaseApplication.getContext().getCacheDir(), 10 * 1024 * 1024))
+            .build();
 
     private String execute(String url, Map<String, String> headMap, String jsonString, int methodType) throws IOException {
         BaseLogUtil.methodStart("发送Http请求");
