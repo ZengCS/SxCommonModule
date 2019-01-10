@@ -10,9 +10,11 @@ import java.util.List;
 public interface HttpCallback<T, V> {
     void onStart(T req);
 
-    void onResultWithObj(T req, V result);
-
-    void onResultWithList(T req, List<V> result);
+    /**
+     * @param req
+     * @param result 为了兼容单个对象和列表数据，这里统一返回列表，如果只有单个对象，可以通过result.get(0)得到
+     */
+    void onResult(T req, List<V> result);
 
     void onFail(T req, String code, String msg);
 

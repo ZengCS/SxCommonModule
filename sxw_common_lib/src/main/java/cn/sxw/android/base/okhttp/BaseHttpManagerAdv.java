@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import cn.sxw.android.base.net.bean.BaseResponse;
 import cn.sxw.android.base.ui.BaseApplication;
 import cn.sxw.android.base.utils.BaseLogUtil;
+import cn.sxw.android.base.utils.JListKit;
 import cn.sxw.android.base.utils.JTextUtils;
 import cn.sxw.android.base.utils.NetworkUtil;
 import okhttp3.Cache;
@@ -131,13 +132,15 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                             V bean = JSON.parseObject(data, (Class<V>) clz);
                             if (onResultCallback != null) onResultCallback.onSuccess(bean);
                             if (canCallback(activity, callback)) {
-                                mHandler.post(() -> callback.onResultWithObj(req, bean));
+                                List<V> list = JListKit.newArrayList();
+                                list.add(bean);
+                                mHandler.post(() -> callback.onResult(req, list));
                             }
                         } else if (JTextUtils.isJsonList(data)) {
                             List<V> list = JSON.parseArray(data, (Class<V>) clz);
                             if (onResultCallback != null) onResultCallback.onSuccess(list);
                             if (canCallback(activity, callback)) {
-                                mHandler.post(() -> callback.onResultWithList(req, list));
+                                mHandler.post(() -> callback.onResult(req, list));
                             }
                         }
                     } else {
@@ -373,7 +376,9 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                             }
 
                             if (canCallback(activity, callback)) {
-                                mHandler.post(() -> callback.onResultWithObj(req, outFile));
+                                List<File> list = JListKit.newArrayList();
+                                list.add(outFile);
+                                mHandler.post(() -> callback.onResult(req, list));
                             }
 
                         } catch (IOException e) {

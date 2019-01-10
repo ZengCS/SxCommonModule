@@ -21,6 +21,7 @@ import cn.sxw.android.base.bean.BlankBean;
 import cn.sxw.android.base.di.component.AppComponent;
 import cn.sxw.android.base.imageloader.ImageLoader;
 import cn.sxw.android.base.okhttp.HttpCallback;
+import cn.sxw.android.base.okhttp.HttpCode;
 import cn.sxw.android.base.okhttp.HttpUrlEncode;
 import cn.sxw.android.base.utils.JListKit;
 import cn.sxw.android.lib.R;
@@ -75,7 +76,9 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
                 getDataByOkhttp("api2.test.sxw.cn");
                 break;
             case R.id.id_btn_bad_gateway:// 自定义接口路径
-                String urlEncode2 = HttpUrlEncode.getUrlEncode("http", "api2.test.sxw.cn", "/update/app/list", null);
+                // String urlEncode2 = HttpUrlEncode.encode("http", "api2.test.sxw.cn", "/update/app/list", null);
+                // String urlEncode2 = HttpUrlEncode.encode("http://api2.test.sxw.cn/update/app/list", null);
+                String urlEncode2 = HttpUrlEncode.encode("https://www.baidu.com", null);
                 getDataByOkhttp(urlEncode2);
                 break;
         }
@@ -144,16 +147,17 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
         // 这里注意，只需要输入API名称，无需输入HOST
         // TestRequest request = new TestRequest(this, "v2/5c35b8e63000009f0021b4a3");
         TestRequest request = new TestRequest(this, api);
-        // 这些参数会被转成JSON
+        // 这些参数会被转成JSON，只有是POST请求时才有用，因为这些要放进Body内，GET方式无法设置Body
         request.setKey1("val1");
         request.setKey2("val2");
         // 这些参数会拼接到url
-        request.getParamMap().put("p1", "1");
-        request.getParamMap().put("p2", "test");
-        request.getParamMap().put("p3", "true");
+        request.addQueryParameter("p1", 1);
+        request.addQueryParameter("p2", 2.0);
+        request.addQueryParameter("p3", "test");
+        request.addQueryParameter("p4", true);
         // 这些参数会放到Header里
-        request.getHeadMap().put("header1", "1234567890");
-        request.getHeadMap().put("header2", "9874563210");
+        request.addHeader("header1", "1234567890");
+        request.addHeader("header2", "9874563210");
 
         request.setHttpCallback(new HttpCallback<TestRequest, BlankBean>() {
             @Override
@@ -162,17 +166,20 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
             }
 
             @Override
-            public void onResultWithObj(TestRequest req, BlankBean bean) {
-                // TODO 如果返回值是对象，这这里处理
-                showToast("数据加载成功，" + JSON.toJSONString(bean));
-                tvResponse.setText("数据加载成功，JSON\n" + JSON.toJSONString(bean));
-            }
-
-            @Override
-            public void onResultWithList(TestRequest req, List<BlankBean> list) {
+            public void onResult(TestRequest req, List<BlankBean> list) {
                 // TODO 如果返回值是列表，在这里处理
-                showToast("加载数据列表成功，共:" + list.size() + "条数据");
-                onRequestSuccess(list);
+                if (list != null && list.size() > 0) {
+                    if (list.size() == 1) {
+                        BlankBean bean = list.get(0);
+                        showToast("数据加载成功，" + JSON.toJSONString(bean));
+                        tvResponse.setText("数据加载成功，JSON\n" + JSON.toJSONString(bean));
+                    } else {
+                        showToast("加载数据列表成功，共:" + list.size() + "条数据");
+                        onRequestSuccess(list);
+                    }
+                } else {
+                    onFail(req, HttpCode.NO_DATA, "暂无数据");
+                }
             }
 
             @Override

@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by ZengCS on 2019/1/9.
@@ -17,7 +18,7 @@ public abstract class BaseRequest {
     @JSONField(serialize = false)
     private String api = "";// api路径,不带host
     @JSONField(serialize = false)
-    private HashMap<String, String> paramMap;// query 参数列表
+    private ConcurrentHashMap<String, String> paramMap;// query 参数列表
     @JSONField(serialize = false)
     private HashMap<String, String> headMap;// Http Header 参数列表
     @JSONField(serialize = false)
@@ -35,7 +36,7 @@ public abstract class BaseRequest {
     public String getApi() {
         try {
             if (!api.startsWith("http:") && !api.startsWith("https:")) {
-                return HttpUrlEncode.getUrlEncode(
+                return HttpUrlEncode.encode(
                         HttpManager.getInstance().getScheme(),
                         HttpManager.getInstance().getHost(),
                         api, paramMap);
@@ -51,24 +52,22 @@ public abstract class BaseRequest {
         this.api = api;
     }
 
-    public HashMap<String, String> getParamMap() {
+    public void addQueryParameter(String key, Object val) {
         if (paramMap == null)
-            paramMap = new HashMap<>();
-        return paramMap;
+            paramMap = new ConcurrentHashMap<>();
+        paramMap.put(key, String.valueOf(val));
     }
 
-    public void setParamMap(HashMap<String, String> paramMap) {
-        this.paramMap = paramMap;
+    public void addHeader(String key, Object val) {
+        if (headMap == null)
+            headMap = new HashMap<>();
+        headMap.put(key, String.valueOf(val));
     }
 
     public HashMap<String, String> getHeadMap() {
         if (headMap == null)
             headMap = new HashMap<>();
         return headMap;
-    }
-
-    public void setHeadMap(HashMap<String, String> headMap) {
-        this.headMap = headMap;
     }
 
     public Activity getActivity() {

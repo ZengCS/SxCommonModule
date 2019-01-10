@@ -15,7 +15,7 @@ import java.util.Map;
 public class HttpManager implements OkApiHelper {
     private static HttpManager sHttpManager;
     private BaseHttpManagerAdv mHttp;
-    private Map<String, String> headMap = new HashMap<>();
+    private Map<String, String> globalHeaderMap = new HashMap<>();// 全局Header
     private String host;
     private String scheme = "http";
 
@@ -31,9 +31,9 @@ public class HttpManager implements OkApiHelper {
     }
 
     public HttpManager setTokenHeader(String token) {
-        headMap.clear();
+        globalHeaderMap.clear();
         if (!TextUtils.isEmpty(token)) {
-            headMap.put("TOKEN", token);
+            globalHeaderMap.put("TOKEN", token);
         }
         return sHttpManager;
     }
@@ -83,13 +83,13 @@ public class HttpManager implements OkApiHelper {
 
     @Override
     public void sendPost(BaseRequest request) {
-        request.getHeadMap().putAll(headMap);
+        request.getHeadMap().putAll(globalHeaderMap);
         mHttp.sendPost(request);
     }
 
     @Override
     public void sendGet(BaseRequest request) {
-        request.getHeadMap().putAll(headMap);
+        request.getHeadMap().putAll(globalHeaderMap);
         mHttp.sendGet(request);
     }
 }

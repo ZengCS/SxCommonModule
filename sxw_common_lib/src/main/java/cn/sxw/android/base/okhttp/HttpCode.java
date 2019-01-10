@@ -34,6 +34,9 @@ public interface HttpCode {
     // 文件保存失败
     String FILE_SAVE_ERROR = "-4";
 
+    // 暂无数据
+    String NO_DATA = "-5";
+
     // 其他错误
-    String OTHER_ERROR = "-5";
+    String OTHER_ERROR = "-6";
 }
