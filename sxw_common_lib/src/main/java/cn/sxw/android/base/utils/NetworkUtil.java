@@ -3,7 +3,6 @@ package cn.sxw.android.base.utils;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 
 /**
  * Created by Alex.Tang on 2017-07-11.
@@ -39,12 +38,13 @@ public class NetworkUtil {
     public static boolean isConnected(Context context) {
         String service = Context.CONNECTIVITY_SERVICE;
         ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(service);
+        if (mConnectivityManager == null)
+            return false;
         NetworkInfo oNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
         boolean isConnected = (oNetworkInfo != null) && (oNetworkInfo.isConnectedOrConnecting());
-        Log.d(TAG, "是否有网络：" + isConnected);
+        LogUtil.w("是否有网络：" + isConnected);
         if (isConnected) {
-            Log.d(TAG, "当前网络的类型是：" + oNetworkInfo.getType());
-            Log.d(TAG, "当前网络的类型的名字是：" + oNetworkInfo.getTypeName());
+            LogUtil.w("当前网络的类型的名字是：" + oNetworkInfo.getTypeName());
         }
         return isConnected;
     }
@@ -61,8 +61,8 @@ public class NetworkUtil {
         NetworkInfo oNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
         boolean isConnected = (oNetworkInfo != null) && (oNetworkInfo.isConnectedOrConnecting());
         if (isConnected) {
-            Log.d(TAG, "当前网络的类型是：" + oNetworkInfo.getType());
-            Log.d(TAG, "当前网络的类型的名字是：" + oNetworkInfo.getTypeName());
+            LogUtil.w("当前网络的类型是：" + oNetworkInfo.getType());
+            LogUtil.w("当前网络的类型的名字是：" + oNetworkInfo.getTypeName());
             if (oNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
                 return true;
             }

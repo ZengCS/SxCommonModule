@@ -1,7 +1,6 @@
 package cn.sxw.android.base.utils;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.text.ParseException;
 import java.text.ParsePosition;
@@ -16,6 +15,7 @@ import java.util.Locale;
  */
 public class JDateKit {
     private static final String TAG = "JDateKit";
+    public static final long ONE_HOUR = 1000 * 60 * 60;
 
     public static String getLastDay(String baseDay) {
         if (TextUtils.isEmpty(baseDay)) {
@@ -45,11 +45,12 @@ public class JDateKit {
         }
         SimpleDateFormat sdf = null;
         try {
-            sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
+            sdf = new SimpleDateFormat("yyyy-MM-dd");
             Date curr = sdf.parse(date);
             date = sdf.format(curr);
         } catch (ParseException e) {
             e.printStackTrace();
+            LogUtil.e(e);
         }
 
         Calendar c = Calendar.getInstance();
@@ -65,24 +66,8 @@ public class JDateKit {
         return date;
     }
 
-    public static String timeToHHMMSS(long time) {
-        Log.d(TAG, "timeToHHMMSS: time = " + time);
-        int s = (int) (time / 1000);
-        int m = s / 60;
-        int h = m / 60;
-        m %= 60;
-        s %= 60;
-        if (h > 0) {
-            return (h > 9 ? h : ("0" + h)) + ":" + (m > 9 ? m : ("0" + m)) + ":" + (s > 9 ? s : ("0" + s));
-        } else if (m > 0) {
-            return "00:" + (m > 9 ? m : ("0" + m)) + ":" + (s > 9 ? s : ("0" + s));
-        } else {
-            return "00:00:" + (s > 9 ? s : ("0" + s));
-        }
-    }
-
     public static String timeToString(long time) {
-        Log.d(TAG, "timeToString: time = " + time);
+        LogUtil.w("timeToString: time = " + time);
         int s = (int) (time / 1000);
         int m = s / 60;
         int h = m / 60;
@@ -98,52 +83,23 @@ public class JDateKit {
         }
     }
 
-    public static String timeToCNString(long time) {
-        Log.d(TAG, "timeToString: time = " + time);
+    public static String timeToStringChineChinese(long time) {
+        LogUtil.w("timeToString: time = " + time);
         int s = (int) (time / 1000);
         int m = s / 60;
         int h = m / 60;
         int d = h / 24;
         if (d > 0) {
-            return d + "天" + h % 24 + "时" + m % 60 + "分" + s % 60 + "秒";
+            return d + "天" + h % 24 + "小时" + m % 60 + "分" + s % 60 + "秒";
         } else if (h > 0) {
-            return h % 24 + "时" + m % 60 + "分" + s % 60 + "秒";
+            return h % 24 + "小时" + m % 60 + "分" + s % 60 + "秒";
         } else if (m > 0) {
             return m % 60 + "分" + s % 60 + "秒";
         } else {
-            return "0分" + s % 60 + "秒";
+            return s % 60 + "秒";
         }
     }
 
-
-    public static String secondToCNString(int s) {
-        int m = s / 60;
-        int h = m / 60;
-        int d = h / 24;
-        if (d > 0) {
-            return "共" + d + "天" + h % 24 + "时" + m % 60 + "分" + s % 60 + "秒";
-        } else if (h > 0) {
-            return "共" + h % 24 + "时" + m % 60 + "分" + s % 60 + "秒";
-        } else if (m > 0) {
-            return "共" + m % 60 + "分" + s % 60 + "秒";
-        } else {
-            return "共0分" + s % 60 + "秒";
-        }
-    }
-
-    public static String calcTimeGap(String s1, String s2) {
-        SimpleDateFormat sdf;
-        try {
-            sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
-            Date d1 = sdf.parse(s1);
-            Date d2 = sdf.parse(s2);
-            long time = d2.getTime() - d1.getTime();
-            return timeToString(time);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "00:00";
-    }
 
     /**
      * 将Date转化成String
@@ -156,18 +112,6 @@ public class JDateKit {
 
     public static String currDateTime() {
         return dateToStr("yyyy-MM-dd HH:mm:ss", new Date());
-    }
-
-    public static String currHourMin() {
-        return dateToStr("HH:mm", new Date());
-    }
-
-    public static String currDate() {
-        return dateToStr("yyyyMMdd", new Date());
-    }
-
-    public static String currDateTimeNoSpace() {
-        return dateToStr("yyyyMMddHHmmss", new Date());
     }
 
     /**
@@ -218,29 +162,6 @@ public class JDateKit {
      */
     public static Date getDateByDateStr(String dateStr) {
         return getDateByDateStr("yyyy-MM-dd", dateStr);
-    }
-
-    /**
-     * 把日期剪出来
-     */
-    public static String cutDate(String dateStr) {
-        try {
-            return dateToStr(getDateByDateStr("yyyy-MM-dd HH:mm:ss", dateStr));
-        } catch (Exception e) {
-            return "解析日期失败";
-        }
-    }
-
-    /**
-     * 把时间剪出来
-     */
-    public static String cutTime(String dateStr) {
-        try {
-            Date date = getDateByDateStr("yyyy-MM-dd HH:mm:ss", dateStr);
-            return dateToStr("HH:mm:ss", date);
-        } catch (Exception e) {
-            return "解析时间失败";
-        }
     }
 
     /**
@@ -325,20 +246,8 @@ public class JDateKit {
         return dateToStr(date);
     }
 
-    public static String timeToDateTime(long time) {
-        Date date = new Date(time);
-        return dateToStr("yyyy-MM-dd HH:mm:ss", date);
-    }
-
     public static String timeToDate(String format, long time) {
         Date date = new Date(time);
         return dateToStr(format, date);
     }
-
-    public static int getCurrentMonth() {
-        Calendar calendar = Calendar.getInstance();
-        int month = calendar.get(Calendar.MONTH) + 1;
-        return month;
-    }
-
 }

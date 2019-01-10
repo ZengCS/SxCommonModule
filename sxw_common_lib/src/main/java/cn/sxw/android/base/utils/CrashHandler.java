@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Process;
-import android.util.Log;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,7 +24,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     private static final boolean DEBUG = true;
 
     private static final String PATH = Environment.getExternalStorageDirectory().getPath() +
-            "/sxw/log/";
+            "/sxw/launcher/log/";
     private static final String FILE_NAME = "crash";
 
     //log文件的后缀名
@@ -69,6 +68,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
             uploadExceptionToServer();
         } catch (IOException e) {
             e.printStackTrace();
+            LogUtil.e(e);
         }
 
         //打印出当前调用栈信息
@@ -87,7 +87,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         //如果SD卡不存在或无法使用，则无法把异常信息写入SD卡
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             if (DEBUG) {
-                Log.w(TAG, "sdcard unmounted,skip dump exception");
+                LogUtil.w("sdcard unmounted,skip dump exception");
                 return;
             }
         }
@@ -115,7 +115,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
             pw.close();
         } catch (Exception e) {
-            Log.e(TAG, "dump crash info failed");
+            LogUtil.e(TAG, "dump crash info failed");
         }
     }
 
