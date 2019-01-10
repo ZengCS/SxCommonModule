@@ -46,6 +46,7 @@ public class BaseHttpManagerAdv implements OkApiHelper {
     private static final int METHOD_POST = 1;
     private static final int METHOD_PUT = 2;
     private static final int METHOD_DELETE = 3;
+    private static final String[] METHOD_NAMES = {"GET", "POST", "PUT", "DELETE"};
 
     private static BaseHttpManagerAdv sInstance = null;
     // 公用Handler
@@ -120,7 +121,7 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                     BaseResponse baseResponse = JSON.parseObject(response, BaseResponse.class);
                     if (baseResponse == null) {
                         if (canCallback(activity, callback)) {
-                            mHandler.post(() -> callback.onFail(req, HttpCode.SERVER_ERROR, response));
+                            mHandler.post(() -> callback.onFail(req, HttpCode.INTERNAL_SERVER_ERROR, response));
                         }
                         return;
                     }
@@ -146,13 +147,29 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                             mHandler.post(() -> callback.onFail(req, String.valueOf(baseResponse.getCode()), baseResponse.getMessage()));
                         }
                     }
+                } else if (response.contains("403") || response.contains("Forbidden")) {
+                    if (canCallback(activity, callback)) {
+                        mHandler.post(() -> callback.onFail(null, HttpCode.FORBIDDEN, "没有访问权限!"));
+                    }
                 } else if (response.contains("404") || response.contains("Not Found") || response.contains("NotFound")) {
                     if (canCallback(activity, callback)) {
                         mHandler.post(() -> callback.onFail(null, HttpCode.NOT_FOUND, "接口地址不存在!"));
                     }
-                } else if (response.contains("500") || response.contains("Server Error")) {
+                } else if (response.contains("405") || response.contains("Not Allowed")) {
                     if (canCallback(activity, callback)) {
-                        mHandler.post(() -> callback.onFail(null, HttpCode.SERVER_ERROR, "内部服务器错误!"));
+                        mHandler.post(() -> callback.onFail(null, HttpCode.NOT_ALLOWED, "当前接口不支持[" + METHOD_NAMES[methodType] + "]方式请求!"));
+                    }
+                } else if (response.contains("500") || response.contains("Internal Server Error")) {
+                    if (canCallback(activity, callback)) {
+                        mHandler.post(() -> callback.onFail(null, HttpCode.INTERNAL_SERVER_ERROR, "内部服务器错误!"));
+                    }
+                } else if (response.contains("502") || response.contains("Bad Gateway")) {
+                    if (canCallback(activity, callback)) {
+                        mHandler.post(() -> callback.onFail(null, HttpCode.BAD_GATEWAY, "Bad Gateway!"));
+                    }
+                } else if (response.contains("504") || response.contains("Gateway Timeout")) {
+                    if (canCallback(activity, callback)) {
+                        mHandler.post(() -> callback.onFail(null, HttpCode.BAD_GATEWAY, "访问接口超时!"));
                     }
                 } else {
                     if (canCallback(activity, callback)) {
@@ -208,15 +225,19 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                 break;
         }
 
-        if (headMap != null && headMap.size() > 0) {
-            // ********* Log打印Header参数 *********
-            StringBuilder stringBuilder = new StringBuilder();
-            for (String key : headMap.keySet()) {
-                requestBuilder.addHeader(key, headMap.get(key));
-                stringBuilder.append("\n* --> ").append(key).append(" = ").append(headMap.get(key));
-            }
-            BaseLogUtil.methodStep("HEADERS" + stringBuilder.toString());
+        StringBuilder stringBuilder = new StringBuilder();
+
+        if (headMap == null)
+            headMap = new HashMap<>();
+        // 设置全局Request-ID
+        String requestId = System.nanoTime() + "" + (int) (Math.random() * 9000 + 1000);
+        headMap.put("Request-Id", requestId);
+        // ********* Log打印Header参数 *********
+        for (String key : headMap.keySet()) {
+            requestBuilder.addHeader(key, headMap.get(key));
+            stringBuilder.append("\n* --> ").append(key).append(" = ").append(headMap.get(key));
         }
+        BaseLogUtil.methodStep("HEADERS" + stringBuilder.toString());
 
         Response response = httpClient.newCall(requestBuilder.build()).execute();
         ResponseBody body = response.body();

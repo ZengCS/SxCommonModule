@@ -21,6 +21,7 @@ import cn.sxw.android.base.bean.BlankBean;
 import cn.sxw.android.base.di.component.AppComponent;
 import cn.sxw.android.base.imageloader.ImageLoader;
 import cn.sxw.android.base.okhttp.HttpCallback;
+import cn.sxw.android.base.okhttp.HttpUrlEncode;
 import cn.sxw.android.base.utils.JListKit;
 import cn.sxw.android.lib.R;
 import cn.sxw.android.lib.di.component.DaggerEmptyComponent;
@@ -56,21 +57,26 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
     @Click({R.id.id_btn_get_bean,
             R.id.id_btn_failed,
             R.id.id_btn_error_json,
-            R.id.id_btn_not_found
+            R.id.id_btn_bad_gateway,
+            R.id.id_btn_not_found,
     })
     void onClick(View v) {
         switch (v.getId()) {
             case R.id.id_btn_get_bean:
-                getDataByOkhttp("v2/5c35b8e63000009f0021b4a3");
+                getDataByOkhttp("/v2/5c35b8e63000009f0021b4a3");
                 break;
             case R.id.id_btn_failed:
-                getDataByOkhttp("v2/5c35c3b9300000780021b4e9");
+                getDataByOkhttp("/v2/5c35c3b9300000780021b4e9");
                 break;
             case R.id.id_btn_error_json:
-                getDataByOkhttp("v2/5c35c41a3000007f0021b4ec");
+                getDataByOkhttp("/v2/5c35c41a3000007f0021b4ec");
                 break;
-            case R.id.id_btn_not_found:
+            case R.id.id_btn_not_found:// 自定义接口路径
                 getDataByOkhttp("api2.test.sxw.cn");
+                break;
+            case R.id.id_btn_bad_gateway:// 自定义接口路径
+                String urlEncode2 = HttpUrlEncode.getUrlEncode("http", "api2.test.sxw.cn", "/update/app/list", null);
+                getDataByOkhttp(urlEncode2);
                 break;
         }
     }

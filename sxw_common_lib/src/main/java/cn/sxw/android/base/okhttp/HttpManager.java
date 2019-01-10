@@ -35,8 +35,6 @@ public class HttpManager implements OkApiHelper {
         if (!TextUtils.isEmpty(token)) {
             headMap.put("TOKEN", token);
         }
-        String requestId = System.nanoTime() + "" + (int) (Math.random() * 9000 + 1000);
-        headMap.put("Request-Id", requestId);
         return sHttpManager;
     }
 

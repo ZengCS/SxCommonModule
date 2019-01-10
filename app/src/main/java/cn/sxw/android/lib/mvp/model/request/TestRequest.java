@@ -20,6 +20,10 @@ public class TestRequest extends BaseRequest {
     @JSONField(serialize = false)
     private HttpCallback<TestRequest, BlankBean> httpCallback;
 
+    /**
+     * @param activity
+     * @param api      只传Api名称，适配全局的Scheme和Host，或者通过HttpUrlEncode.getUrlEncode()组装完整路径
+     */
     public TestRequest(Activity activity, String api) {
         super(activity, api);
     }

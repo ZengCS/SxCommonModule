@@ -61,6 +61,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="模拟404" />
+
+        <Button
+            android:id="@+id/id_btn_bad_gateway"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="模拟502" />
     </LinearLayout>
 
     <!--测试AutoConstraintLayout Start-->

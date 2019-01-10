@@ -4,11 +4,8 @@ import android.app.Activity;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
-import com.google.gson.reflect.TypeToken;
 
 import java.util.HashMap;
-
-import okhttp3.HttpUrl;
 
 /**
  * Created by ZengCS on 2019/1/9.
@@ -18,17 +15,15 @@ import okhttp3.HttpUrl;
 
 public abstract class BaseRequest {
     @JSONField(serialize = false)
-    private String api = "";
+    private String api = "";// api路径,不带host
     @JSONField(serialize = false)
-    private HashMap<String, String> paramMap;
+    private HashMap<String, String> paramMap;// query 参数列表
     @JSONField(serialize = false)
-    private HashMap<String, String> headMap;
+    private HashMap<String, String> headMap;// Http Header 参数列表
     @JSONField(serialize = false)
-    private Activity activity;
+    private Activity activity;// 1.提供Context 2.验证是否需要回调
     @JSONField(serialize = false)
-    private TypeToken typeToken;
-    @JSONField(serialize = false)
-    private Class clz;
+    private Class clz;// 用于FastJson反序列化
 
     protected abstract <T, V> HttpCallback<T, V> getHttpCallback();
 
@@ -39,15 +34,11 @@ public abstract class BaseRequest {
 
     public String getApi() {
         try {
-            if (paramMap != null) {// 组装url完整地址
-                HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
-                        .scheme(HttpManager.getInstance().getScheme())
-                        .host(HttpManager.getInstance().getHost())
-                        .addPathSegments(api);
-                for (String key : paramMap.keySet()) {
-                    urlBuilder.addQueryParameter(key, paramMap.get(key));
-                }
-                return urlBuilder.build().toString();
+            if (!api.startsWith("http:") && !api.startsWith("https:")) {
+                return HttpUrlEncode.getUrlEncode(
+                        HttpManager.getInstance().getScheme(),
+                        HttpManager.getInstance().getHost(),
+                        api, paramMap);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -86,14 +77,6 @@ public abstract class BaseRequest {
 
     public void setActivity(Activity activity) {
         this.activity = activity;
-    }
-
-    public TypeToken getTypeToken() {
-        return typeToken;
-    }
-
-    public void setTypeToken(TypeToken typeToken) {
-        this.typeToken = typeToken;
     }
 
     public Class getClz() {

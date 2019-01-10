@@ -7,8 +7,20 @@ public interface HttpCode {
     // 找不到服务器或者接口
     String NOT_FOUND = "404";
 
+    // 访问权限不出
+    String FORBIDDEN = "403";
+
+    // 方法不被允许
+    String NOT_ALLOWED = "405";
+
     // 服务器错误
-    String SERVER_ERROR = "500";
+    String INTERNAL_SERVER_ERROR = "500";
+
+    // 502 Bad Gateway
+    String BAD_GATEWAY = "502";
+
+    // 504 Gateway Timeout
+    String GATEWAY_TIMEOUT = "504";
 
     // 网络没有接通
     String NETWORK_ERROR = "-1";
