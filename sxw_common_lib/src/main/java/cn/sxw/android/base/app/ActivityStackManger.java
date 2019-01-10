@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
-import cn.sxw.android.base.utils.BaseLogUtil;
+import cn.sxw.android.base.utils.LogUtil;
 
 /**
  * Activity堆栈管理
@@ -75,7 +75,7 @@ public class ActivityStackManger {
      * 结束所有Activity
      */
     public void finishAllActivity() {
-        BaseLogUtil.methodStep("结束所有Activity");
+        LogUtil.methodStep("结束所有Activity");
         Activity activity;
         while (!mActivityStack.empty()) {
             activity = mActivityStack.pop();
@@ -154,7 +154,7 @@ public class ActivityStackManger {
      * 退出应用程序
      */
     public void exitApp() {
-        BaseLogUtil.w("退出应用程序");
+        LogUtil.w("退出应用程序");
         finishAllActivity();
 //        android.os.Process.killProcess(android.os.Process.myPid());
 //        System.gc();

@@ -11,14 +11,15 @@ import cn.sxw.android.BuildConfig;
  * E-mail:zcs@sxw.cn
  * Add:成都市天府软件园E3-3F
  */
-public abstract class BaseLogUtil {
+public abstract class LogUtil {
     public static final int TYPE_V = 0;
     public static final int TYPE_I = 1;
     public static final int TYPE_D = 2;
     public static final int TYPE_W = 3;
     public static final int TYPE_E = 4;
 
-    protected static final String TAG = "SXJY/Debug";
+    protected static final String TAG = "Debug/SXJY";
+    protected static final String TAG_HTTP = "Debug/Http";
     private static Logger log = Logger.getLogger(TAG);
     private static boolean isDebug = true;
     private static boolean useLog4j = !BuildConfig.DEBUG;
@@ -104,6 +105,15 @@ public abstract class BaseLogUtil {
 
     public static void methodStep(String msg) {
         w(TAG, "* --> " + msg);
+    }
+
+
+    public static void methodStartHttp(String msg) {
+        w(TAG_HTTP, "******************** Start " + msg + " ********************");
+    }
+
+    public static void methodStepHttp(String msg) {
+        w(TAG_HTTP, "* --> " + msg);
     }
 
     public static void methodStepError(String msg) {

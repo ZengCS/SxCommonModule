@@ -84,7 +84,7 @@ public class FileUtils {
         File[] files = dir.listFiles();
         for (File file : files) {
             if (file.isFile()) {
-                BaseLogUtil.d("CacheFile", "[" + file.length() + "]" + file.getPath());
+                LogUtil.d("CacheFile", "[" + file.length() + "]" + file.getPath());
                 fileList.add(file);
             } else if (file.isDirectory()) {
                 fileList.addAll(getDirFileList(file));// 递归调用继续统计

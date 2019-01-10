@@ -10,7 +10,7 @@ import com.chad.library.adapter.base.BaseViewHolder;
 import java.util.List;
 
 import cn.sxw.android.base.bean.BlankBean;
-import cn.sxw.android.base.utils.BaseLogUtil;
+import cn.sxw.android.base.utils.LogUtil;
 import cn.sxw.android.lib.R;
 
 
@@ -39,7 +39,7 @@ public class EmptyRecyclerAdapter extends BaseQuickAdapter<BlankBean, BaseViewHo
         helper.getView(R.id.id_btn_inner).setOnClickListener(v -> {
             // TODO 编写具体代码
             int position = helper.getAdapterPosition();
-            BaseLogUtil.d("我是元素内的按钮，position = " + position);
+            LogUtil.d("我是元素内的按钮，position = " + position);
         });
         // 设置可见性 true for VISIBLE, false for GONE.
         helper.setGone(R.id.id_view_new, !item.isNewest());

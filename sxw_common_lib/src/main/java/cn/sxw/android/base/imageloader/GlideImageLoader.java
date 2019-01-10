@@ -22,7 +22,7 @@ import cn.sxw.android.base.imageloader.listener.ImageSaveListener;
 import cn.sxw.android.base.imageloader.listener.SourceReadyListener;
 import cn.sxw.android.base.imageloader.transformation.GlideCircleTransform;
 import cn.sxw.android.base.imageloader.utils.ImageLoaderUtils;
-import cn.sxw.android.base.utils.BaseLogUtil;
+import cn.sxw.android.base.utils.LogUtil;
 
 /**
  * Created by Alex.Tang on 2017-03-22.
@@ -43,7 +43,7 @@ public class GlideImageLoader implements ImageLoader {
 
     @Override
     public void displayImageWithAppCxt(String url, ImageView imageView) {
-        BaseLogUtil.w(TAG, "displayImageWithAppCxt() called with: url = [" + url + "]");
+        LogUtil.w(TAG, "displayImageWithAppCxt() called with: url = [" + url + "]");
         Glide.with(imageView.getContext().getApplicationContext()).load(url)
                 .placeholder(imageView.getDrawable())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
@@ -63,7 +63,7 @@ public class GlideImageLoader implements ImageLoader {
     @Override
     public void displayImage(Context context, String imageUrl, ImageView imageView,
                              int loadImage, int errorImage, final ImageLoadListener listener) {
-        BaseLogUtil.w(TAG, "displayImage() called with: imageUrl = [" + imageUrl + "]");
+        LogUtil.w(TAG, "displayImage() called with: imageUrl = [" + imageUrl + "]");
         Glide.with(context).load(imageUrl)
                 .placeholder(loadImage)
                 .error(errorImage)
@@ -92,7 +92,7 @@ public class GlideImageLoader implements ImageLoader {
 
     @Override
     public void displayCircleImage(String url, int defaultImage, ImageView imageView) {
-        BaseLogUtil.w(TAG, "displayCircleImage() called with: url = [" + url + "]");
+        LogUtil.w(TAG, "displayCircleImage() called with: url = [" + url + "]");
         Glide.with(imageView.getContext()).load(url).placeholder(defaultImage)
                 .transform(new GlideCircleTransform(imageView.getContext()))
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE).into(imageView);
@@ -100,7 +100,7 @@ public class GlideImageLoader implements ImageLoader {
 
     @Override
     public void displayCircleBorderImage(String url, int defaultImage, ImageView imageView, int borderWidth, int borderColor) {
-        BaseLogUtil.w(TAG, "displayCircleBorderImage() called with: url = [" + url + "]");
+        LogUtil.w(TAG, "displayCircleBorderImage() called with: url = [" + url + "]");
         Glide.with(imageView.getContext()).load(url).placeholder(defaultImage)
                 .transform(new GlideCircleTransform(imageView.getContext(), borderWidth, borderColor))
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE).into(imageView);
@@ -113,7 +113,7 @@ public class GlideImageLoader implements ImageLoader {
 
     @Override
     public void displayImageWithProgress(String url, final ImageView imageView, final ProgressLoadListener listener) {
-        BaseLogUtil.w(TAG, "displayImageWithProgress() called with: url = [" + url + "]");
+        LogUtil.w(TAG, "displayImageWithProgress() called with: url = [" + url + "]");
         Glide.with(imageView.getContext()).using(new ProgressModelLoader(new ProgressUIListener() {
             @Override
             public void update(final int bytesRead, final int contentLength) {
@@ -142,7 +142,7 @@ public class GlideImageLoader implements ImageLoader {
 
     @Override
     public void displayImageWithPrepareCall(String url, ImageView imageView, int defaultImage, final SourceReadyListener listener) {
-        BaseLogUtil.w(TAG, "displayImageWithPrepareCall() called with: url = [" + url + "]");
+        LogUtil.w(TAG, "displayImageWithPrepareCall() called with: url = [" + url + "]");
         Glide.with(imageView.getContext()).load(url)
                 .skipMemoryCache(true)
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
@@ -163,7 +163,7 @@ public class GlideImageLoader implements ImageLoader {
 
     @Override
     public void displayGifWithPrepareCall(String url, ImageView imageView, final SourceReadyListener listener) {
-        BaseLogUtil.w(TAG, "displayGifWithPrepareCall() called with: url = [" + url + "]");
+        LogUtil.w(TAG, "displayGifWithPrepareCall() called with: url = [" + url + "]");
         Glide.with(imageView.getContext()).load(url).asGif()
                 .skipMemoryCache(true)
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE).
@@ -232,7 +232,7 @@ public class GlideImageLoader implements ImageLoader {
 
 
     private void loadNormal(final Context ctx, final String url, int placeholder, ImageView imageView) {
-        BaseLogUtil.w(TAG, "loadNormal() called with: url = [" + url + "]");
+        LogUtil.w(TAG, "loadNormal() called with: url = [" + url + "]");
         Glide.with(ctx).load(url).dontAnimate().placeholder(placeholder).diskCacheStrategy(DiskCacheStrategy.SOURCE).listener(new RequestListener<String, GlideDrawable>() {
             @Override
             public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
@@ -250,7 +250,7 @@ public class GlideImageLoader implements ImageLoader {
      * load image with Glide
      */
     private void loadGif(final Context ctx, String url, int placeholder, ImageView imageView) {
-        BaseLogUtil.w(TAG, "loadGif() called with: url = [" + url + "]");
+        LogUtil.w(TAG, "loadGif() called with: url = [" + url + "]");
         Glide.with(ctx).load(url).asGif()
                 .placeholder(placeholder).skipMemoryCache(true)
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE).listener(new RequestListener<String, GifDrawable>() {

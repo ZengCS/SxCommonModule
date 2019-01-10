@@ -66,6 +66,9 @@ dependencies {
     // RecyclerView适配器
     api 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.44'
 
+    api files('libs/log4j-1.2.17.jar')
+    api files('libs/android-logging-log4j-1.0.3.jar')
+
 //    api('com.aliyun.ams:alicloud-android-hotfix:3.0.0') {
 //        exclude(module: 'alicloud-android-utdid')
 //    }

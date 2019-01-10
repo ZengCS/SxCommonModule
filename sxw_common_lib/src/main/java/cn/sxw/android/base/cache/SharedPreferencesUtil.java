@@ -3,7 +3,7 @@ package cn.sxw.android.base.cache;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import cn.sxw.android.base.utils.BaseLogUtil;
+import cn.sxw.android.base.utils.LogUtil;
 
 /**
  * SharedPreferences的一个工具类，调用setParam就能保存String, Integer, Boolean, Float,
@@ -84,7 +84,7 @@ public class SharedPreferencesUtil {
             editor.apply();
         } catch (Exception e) {
             e.printStackTrace();
-            BaseLogUtil.e(e);
+            LogUtil.e(e);
         }
     }
 

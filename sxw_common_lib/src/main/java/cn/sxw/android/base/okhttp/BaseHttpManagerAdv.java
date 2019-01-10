@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.sxw.android.base.net.bean.BaseResponse;
-import cn.sxw.android.base.utils.BaseLogUtil;
+import cn.sxw.android.base.utils.LogUtil;
 import cn.sxw.android.base.utils.JListKit;
 import cn.sxw.android.base.utils.JTextUtils;
 import cn.sxw.android.base.utils.NetworkUtil;
@@ -205,9 +205,9 @@ public class BaseHttpManagerAdv implements OkApiHelper {
             .build();
 
     private String execute(String url, Map<String, String> headMap, String jsonString, int methodType) throws IOException {
-        BaseLogUtil.methodStart("发送Http请求");
-        BaseLogUtil.methodStep("API = " + url);
-        BaseLogUtil.methodStep("bodyParam = " + jsonString);
+        LogUtil.methodStartHttp("发送Http请求");
+        LogUtil.methodStepHttp("API = " + url);
+        LogUtil.methodStepHttp("bodyParam = " + jsonString);
 
         // 设置请求参数体
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonString);
@@ -241,14 +241,14 @@ public class BaseHttpManagerAdv implements OkApiHelper {
             requestBuilder.addHeader(key, headMap.get(key));
             stringBuilder.append("\n* --> ").append(key).append(" = ").append(headMap.get(key));
         }
-        BaseLogUtil.methodStep("HEADERS" + stringBuilder.toString());
+        LogUtil.methodStepHttp("HEADERS" + stringBuilder.toString());
 
         Response response = httpClient.newCall(requestBuilder.build()).execute();
         ResponseBody body = response.body();
         String bodyString = "";
         if (body != null)
             bodyString = body.string().trim();
-        BaseLogUtil.methodStep(bodyString);
+        LogUtil.methodStepHttp(bodyString);
         return bodyString;
     }
 
@@ -275,11 +275,11 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                 stringBuilder.append("\n").append(key + "=" + headMap.get(key));
             }
         }
-        BaseLogUtil.i("HttpManager", stringBuilder.toString());
+        LogUtil.methodStepHttp(stringBuilder.toString());
 
         Response response = httpClient.newCall(request.build()).execute();
         String bodyString = response.body().string().trim();
-        BaseLogUtil.i("HttpManager", bodyString);
+        LogUtil.methodStepHttp(bodyString);
         return bodyString;
     }
 

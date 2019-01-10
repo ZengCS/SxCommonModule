@@ -25,7 +25,7 @@ import cn.sxw.android.R;
 import cn.sxw.android.base.net.bean.BaseResponse;
 import cn.sxw.android.base.net.bean.LocalTokenCache;
 import cn.sxw.android.base.net.bean.RefreshToken;
-import cn.sxw.android.base.utils.BaseLogUtil;
+import cn.sxw.android.base.utils.LogUtil;
 import cn.sxw.android.base.utils.NetworkUtil;
 
 @Singleton
@@ -87,19 +87,19 @@ public class HttpRequestHelper implements ApiHelper {
         x.http().request(HttpMethod.GET, requestParams, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                BaseLogUtil.d(TAG, "refreshToken：" + result);
+                LogUtil.d(TAG, "refreshToken：" + result);
                 BaseResponse baseResponse = JSON.parseObject(result, BaseResponse.class);
                 if (baseResponse.isRequestSuccess()) {
                     String tokenResult = baseResponse.getData();
                     if (!TextUtils.isEmpty(tokenResult)) {
-                        BaseLogUtil.d(TAG, "refreshToken: 刷新TOKEN成功~");
+                        LogUtil.d(TAG, "refreshToken: 刷新TOKEN成功~");
                         RefreshToken refreshToken = JSON.parseObject(tokenResult, RefreshToken.class);
                         setRefreshToke(refreshToken.getRefreshToken());
                         setToken(refreshToken.getToken());
                         if (callback != null)
                             callback.onRequestSuccess(tokenResult);
                     } else {
-                        BaseLogUtil.w(TAG, "refreshToken: 刷新TOKEN失败~");
+                        LogUtil.w(TAG, "refreshToken: 刷新TOKEN失败~");
                         Toast.makeText(context, R.string.login_time_out, Toast.LENGTH_SHORT).show();
                         context.sendBroadcast(new Intent("cn.sxw.kt.action.LOGIN_AGAIN"));
                         if (callback != null)
@@ -111,7 +111,7 @@ public class HttpRequestHelper implements ApiHelper {
                     if (callback != null)
                         callback.onRequestFailed("TOKEN_TIME_OUT");
                 }*/ else {
-                    BaseLogUtil.w(TAG, "refreshToken: 刷新TOKEN失败~");
+                    LogUtil.w(TAG, "refreshToken: 刷新TOKEN失败~");
                     Toast.makeText(context, R.string.login_time_out, Toast.LENGTH_SHORT).show();
                     context.sendBroadcast(new Intent("cn.sxw.kt.action.LOGIN_AGAIN"));
                     if (callback != null)
@@ -142,7 +142,7 @@ public class HttpRequestHelper implements ApiHelper {
         // 在网络请求时 增加一个head ：字段为Request-Id 值为 用户id+当前时间  类型为long型啊
         String requestId = System.nanoTime() + "" + (int) (Math.random() * 9000 + 1000);
         params.setHeader("Request-Id", requestId);
-        BaseLogUtil.d(TAG, "----Request-Id = " + requestId);
+        LogUtil.d(TAG, "----Request-Id = " + requestId);
 
         if (!TextUtils.isEmpty(token)) {
             params.setHeader("token", token);
@@ -151,7 +151,7 @@ public class HttpRequestHelper implements ApiHelper {
             if (!TextUtils.isEmpty(cacheToken)) {
                 params.setHeader("token", cacheToken);
             } else {
-                BaseLogUtil.w("Token is empty");
+                LogUtil.w("Token is empty");
             }
         }
     }
@@ -161,9 +161,9 @@ public class HttpRequestHelper implements ApiHelper {
             callback.onRequestFailed(context.getResources().getString(R.string.network_access_error));
             return;
         }
-        BaseLogUtil.d(TAG, "requestData() called with: context = [" + context + "], method = [" + method + "], params = [" + params + "], callback = [" + callback + "]");
-        BaseLogUtil.d(TAG, "-----------api=" + params.getUri());
-        BaseLogUtil.d(TAG, "-----------data=" + params.getBodyContent());
+        LogUtil.d(TAG, "requestData() called with: context = [" + context + "], method = [" + method + "], params = [" + params + "], callback = [" + callback + "]");
+        LogUtil.d(TAG, "-----------api=" + params.getUri());
+        LogUtil.d(TAG, "-----------data=" + params.getBodyContent());
         params.setConnectTimeout(TIME_OUT);// 默认值:1000 * 15
         params.setAsJsonContent(true);
         setTokenHeader(params);
@@ -180,7 +180,7 @@ public class HttpRequestHelper implements ApiHelper {
 
             @Override
             public void onCancelled(CancelledException cex) {
-                BaseLogUtil.d(TAG, "-------------onCancelled");
+                LogUtil.d(TAG, "-------------onCancelled");
             }
 
             @Override
@@ -211,12 +211,12 @@ public class HttpRequestHelper implements ApiHelper {
             callback.onRequestFailed(context.getResources().getString(R.string.network_access_error));
             return;
         }
-        BaseLogUtil.d(TAG, "postData() called with: context = [" + context + "], api = [" + api + "], data = [" + data + "], callback = [" + callback + "]");
+        LogUtil.d(TAG, "postData() called with: context = [" + context + "], api = [" + api + "], data = [" + data + "], callback = [" + callback + "]");
         RequestParams params = new RequestParams(api);
         setTokenHeader(params);
         params.setBodyContent(JSON.toJSONString(data));
-        BaseLogUtil.d(TAG, "-----------api=" + api);
-        BaseLogUtil.d(TAG, "-----------data=" + params.getBodyContent());
+        LogUtil.d(TAG, "-----------api=" + api);
+        LogUtil.d(TAG, "-----------data=" + params.getBodyContent());
         params.setConnectTimeout(TIME_OUT);// 默认值:1000 * 15
         params.setAsJsonContent(true);
         x.http().post(params, new Callback.CommonCallback<String>() {
@@ -232,7 +232,7 @@ public class HttpRequestHelper implements ApiHelper {
 
             @Override
             public void onCancelled(CancelledException cex) {
-                BaseLogUtil.d(TAG, "-------------onCancelled");
+                LogUtil.d(TAG, "-------------onCancelled");
             }
 
             @Override
@@ -253,14 +253,14 @@ public class HttpRequestHelper implements ApiHelper {
             callback.onRequestFailed(context.getResources().getString(R.string.network_access_error));
             return;
         }
-        BaseLogUtil.d(TAG, "getData() called with: context = [" + context + "], api = [" + api + "], requestParams = [" + requestParams + "], callback = [" + callback + "]");
+        LogUtil.d(TAG, "getData() called with: context = [" + context + "], api = [" + api + "], requestParams = [" + requestParams + "], callback = [" + callback + "]");
         RequestParams params = new RequestParams(api);
         if (requestParams != null) {
             for (Map.Entry<String, String> entry : requestParams.entrySet()) {
                 params.addQueryStringParameter((entry.getKey()), (entry.getValue()));
             }
         }
-        BaseLogUtil.d(TAG, "getData: api=" + params.getUri());
+        LogUtil.d(TAG, "getData: api=" + params.getUri());
         setTokenHeader(params);
         params.setConnectTimeout(TIME_OUT);// 默认值:1000 * 15
         params.setAsJsonContent(true);
@@ -334,15 +334,15 @@ public class HttpRequestHelper implements ApiHelper {
 
     @Override
     public void analysisErrorInfo(Context context, ApiCallback callback, Throwable ex) {
-        BaseLogUtil.d(TAG, "*********************** 解析Error数据 ***********************");
+        LogUtil.d(TAG, "*********************** 解析Error数据 ***********************");
         ex.printStackTrace();
 
         if (!TextUtils.isEmpty(ex.getMessage())) {
             if (ex.getMessage().equals("Not Found")) {
-                BaseLogUtil.e(TAG, "analysisErrorInfo: API NOT FOUND");
+                LogUtil.e(TAG, "analysisErrorInfo: API NOT FOUND");
                 callback.onRequestFailed(context.getResources().getString(R.string.get_info_failed));
             } else {
-                BaseLogUtil.e(TAG, "analysisErrorInfo: " + ex.getMessage());
+                LogUtil.e(TAG, "analysisErrorInfo: " + ex.getMessage());
                 callback.onRequestFailed(ex.getMessage());
             }
         } else {
@@ -353,36 +353,36 @@ public class HttpRequestHelper implements ApiHelper {
                 if (!TextUtils.isEmpty(result)) {
                     if (result.contains("Internal Server Error")) {
                         callback.onRequestFailed(context.getResources().getString(R.string.internal_server_error));
-                        BaseLogUtil.e(TAG, "analysisErrorInfo: 内部服务器错误");
+                        LogUtil.e(TAG, "analysisErrorInfo: 内部服务器错误");
                         return;
                     }
                     BaseResponse baseResponse = JSON.parseObject(result, BaseResponse.class);
                     if (baseResponse.getCode() == CODE_TOKEN_TIMEOUT) {
-                        BaseLogUtil.w(TAG, "---------TOKEN已过期或TOKEN错误");
+                        LogUtil.w(TAG, "---------TOKEN已过期或TOKEN错误");
                         refreshToken(context, REFRESH_TOKEN_API, callback);
                         return;
                     }
                 }
             }
             callback.onRequestFailed(context.getResources().getString(R.string.server_error));
-            BaseLogUtil.e(TAG, "analysisErrorInfo: 服务器错误");
+            LogUtil.e(TAG, "analysisErrorInfo: 服务器错误");
         }
     }
 
     @Override
     public void analysisResponseData(Context context, ApiCallback callback, String response) {
-        BaseLogUtil.d(TAG, "*********************** 解析Response数据 ***********************");
-        BaseLogUtil.d(TAG, String.valueOf(response));
+        LogUtil.d(TAG, "*********************** 解析Response数据 ***********************");
+        LogUtil.d(TAG, String.valueOf(response));
         BaseResponse baseResponse = JSON.parseObject(response, BaseResponse.class);
         if (baseResponse == null) {
             callback.onRequestFailed("ResponseIsEmpty");
             return;
         }
         if (baseResponse.isRequestSuccess()) {
-            BaseLogUtil.d(TAG, "---------data=" + baseResponse.getData());
+            LogUtil.d(TAG, "---------data=" + baseResponse.getData());
             callback.onRequestSuccess(baseResponse.getData());
         } else if (baseResponse.getCode() == CODE_TOKEN_TIMEOUT) {
-            BaseLogUtil.w(TAG, "---------TOKEN已过期或TOKEN错误");
+            LogUtil.w(TAG, "---------TOKEN已过期或TOKEN错误");
             refreshToken(context, REFRESH_TOKEN_API, callback);
         } else if (baseResponse.getCode() == CODE_TOKEN_NOT_FOUND ||
                 baseResponse.getCode() == CODE_TOKEN_ERROR ||
@@ -392,17 +392,17 @@ public class HttpRequestHelper implements ApiHelper {
             Toast.makeText(context, R.string.login_time_out, Toast.LENGTH_SHORT).show();
             context.sendBroadcast(new Intent("cn.sxw.kt.action.LOGIN_AGAIN"));
         } else if (baseResponse.isFormatError()) {
-            BaseLogUtil.w(TAG, "---------API返回了错误格式的JSON数据！");
+            LogUtil.w(TAG, "---------API返回了错误格式的JSON数据！");
             callback.onRequestFailed(context.getResources().getString(R.string.json_format_error));
         } else {
             // 增加密码错误码判断
             if (baseResponse.getCode() == CODE_PASSWORD_ERROR) {
                 callback.onRequestFailed(String.valueOf(baseResponse.getCode()));
             } else if (baseResponse.getCode() == 200) {// 为了满足那些只有code返回值，没有success返回值的接口
-                BaseLogUtil.d(TAG, "---------data=" + response);
+                LogUtil.d(TAG, "---------data=" + response);
                 callback.onRequestSuccess(response);
             } else {
-                BaseLogUtil.w(TAG, "---------数据加载失败，message=" + baseResponse.getMessage());
+                LogUtil.w(TAG, "---------数据加载失败，message=" + baseResponse.getMessage());
                 callback.onRequestFailed(baseResponse.getMessage());
             }
         }
