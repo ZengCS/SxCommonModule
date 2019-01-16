@@ -9,6 +9,8 @@ import cn.sxw.android.base.di.scope.ApplicationContext;
 import cn.sxw.android.base.di.scope.PreferenceInfo;
 import cn.sxw.android.base.net.ApiHelper;
 import cn.sxw.android.base.net.HttpRequestHelper;
+import cn.sxw.android.base.prefer.AppPreferencesHelper;
+import cn.sxw.android.base.prefer.PreferencesHelper;
 import cn.sxw.android.base.utils.AppConstants;
 import dagger.Module;
 import dagger.Provides;
@@ -37,6 +39,12 @@ public class AppModule {
     @PreferenceInfo
     String providePreferenceName() {
         return AppConstants.PREF_NAME;}
+
+    @Provides
+    @Singleton
+    PreferencesHelper providePreferencesHelper(AppPreferencesHelper appPreferencesHelper) {
+        return appPreferencesHelper;
+    }
 
     @Provides
     @Singleton

@@ -11,15 +11,20 @@ import cn.sxw.android.base.cache.SharedPreferencesUtil;
 import cn.sxw.android.base.mvp.BaseModel;
 import cn.sxw.android.base.net.ApiHelper;
 import cn.sxw.android.base.okhttp.HttpManager;
+import cn.sxw.android.base.prefer.PreferencesHelper;
 import cn.sxw.android.lib.mvp.model.request.TestListRequest;
 import cn.sxw.android.lib.mvp.model.response.LoginResponse;
 
 public class EmptyModelImp extends BaseModel implements IEmptyModel {
 
+    private PreferencesHelper preferencesHelper;
+
     private ApiHelper apiHelper;
+    private int requestTime = 0;
 
     @Inject
-    public EmptyModelImp(ApiHelper apiHelper) {
+    public EmptyModelImp(PreferencesHelper preferencesHelper, ApiHelper apiHelper) {
+        this.preferencesHelper = preferencesHelper;
         this.apiHelper = apiHelper;
     }
 
