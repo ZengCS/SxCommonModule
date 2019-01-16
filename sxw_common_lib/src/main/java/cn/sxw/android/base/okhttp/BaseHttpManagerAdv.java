@@ -10,6 +10,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.google.gson.JsonSyntaxException;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import cn.sxw.android.base.event.RefreshTokenFailedEvent;
 import cn.sxw.android.base.net.bean.BaseResponse;
 import cn.sxw.android.base.net.bean.LocalTokenCache;
 import cn.sxw.android.base.okhttp.request.RefreshTokenRequest;
@@ -133,6 +136,10 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                 LogUtil.methodStepHttp("msg = " + msg);
                 if (httpCallback != null)
                     httpCallback.onFail(req, code, msg);
+                else {
+                    // TOKEN刷新失败，且没有主动监听，发送Event信息
+                    EventBus.getDefault().post(new RefreshTokenFailedEvent(code, msg));
+                }
             }
 
             @Override
