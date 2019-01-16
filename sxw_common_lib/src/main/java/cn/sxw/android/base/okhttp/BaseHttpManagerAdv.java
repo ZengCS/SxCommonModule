@@ -92,6 +92,11 @@ public class BaseHttpManagerAdv implements OkApiHelper {
     public void refreshToken(@NonNull BaseRequest lastRequest) {
         if (!lastRequest.isAllowRefreshToken()) {
             LogUtil.methodStepHttp("当前请求已经触发过一次刷新TOKEN的操作了，不能重复触发。");
+            if (httpCallback == null) {
+                // TOKEN刷新失败，且没有主动监听，发送Event信息
+                EventBus.getDefault().post(new RefreshTokenFailedEvent(HttpCode.TOKEN_HAVE_EXPIRED, "Token刷新失败"));
+            }
+            httpCallback = null;
             return;
         }
         // 设置标记，表示当前已经刷新过Token了,防止一直刷的死循环
@@ -130,7 +135,7 @@ public class BaseHttpManagerAdv implements OkApiHelper {
             }
 
             @Override
-            public void onFail(RefreshTokenRequest req, String code, String msg) {
+            public void onFail(RefreshTokenRequest req, int code, String msg) {
                 LogUtil.methodStepHttp("刷新TOKEN失败");
                 LogUtil.methodStepHttp("code = " + code);
                 LogUtil.methodStepHttp("msg = " + msg);
@@ -211,7 +216,7 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                         if (onResultCallback != null)
                             onResultCallback.onError(req, baseResponse.getMessage());
                         if (canCallback(activity, callback)) {
-                            mHandler.post(() -> callback.onFail(req, String.valueOf(code), baseResponse.getMessage()));
+                            mHandler.post(() -> callback.onFail(req, code, baseResponse.getMessage()));
                         }
                     }
                 } else if (response.contains("403") || response.contains("Forbidden")) {

@@ -10,7 +10,7 @@ public interface HttpCallback<T, V> {
 
     void onResult(T req, V result);
 
-    void onFail(T req, String code, String msg);
+    void onFail(T req, int code, String msg);
 
     void onFinish();
 }

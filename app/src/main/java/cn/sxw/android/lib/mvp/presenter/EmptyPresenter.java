@@ -90,7 +90,7 @@ public class EmptyPresenter extends BasePresenter<IEmptyModel, IEmptyView> {
             }
 
             @Override
-            public void onFail(TestListRequest req, String code, String msg) {
+            public void onFail(TestListRequest req, int code, String msg) {
                 mRootView.onFailed(msg);
                 mRootView.showToast("[ErrorCode = " + code + "]" + msg);
                 mRootView.getTipsTextView().setText("[ErrorCode = " + code + "]" + msg);
@@ -133,7 +133,7 @@ public class EmptyPresenter extends BasePresenter<IEmptyModel, IEmptyView> {
             }
 
             @Override
-            public void onFail(TestObjRequest req, String code, String msg) {
+            public void onFail(TestObjRequest req, int code, String msg) {
                 mRootView.showToast("[ErrorCode = " + code + "]" + msg);
                 mRootView.getTipsTextView().setText("[ErrorCode = " + code + "]" + msg);
             }
@@ -183,7 +183,7 @@ public class EmptyPresenter extends BasePresenter<IEmptyModel, IEmptyView> {
             }
 
             @Override
-            public void onFail(TestStringRequest req, String code, String msg) {
+            public void onFail(TestStringRequest req, int code, String msg) {
                 mRootView.showToast("[ErrorCode = " + code + "]" + msg);
                 mRootView.getTipsTextView().setText("[ErrorCode = " + code + "]" + msg);
             }
@@ -220,7 +220,7 @@ public class EmptyPresenter extends BasePresenter<IEmptyModel, IEmptyView> {
             }
 
             @Override
-            public void onFail(LoginRequest req, String code, String msg) {
+            public void onFail(LoginRequest req, int code, String msg) {
                 mRootView.getTipsTextView().setText("登陆失败:" + msg);
             }
 
@@ -252,7 +252,7 @@ public class EmptyPresenter extends BasePresenter<IEmptyModel, IEmptyView> {
             }
 
             @Override
-            public void onFail(RefreshTokenRequest req, String code, String msg) {
+            public void onFail(RefreshTokenRequest req, int code, String msg) {
                 mRootView.showToast("刷新TOKEN失败，" + msg);
             }
 

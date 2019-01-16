@@ -7,19 +7,19 @@ package cn.sxw.android.base.event;
  */
 
 public class RefreshTokenFailedEvent {
-    private String code;
+    private int code;
     private String msg;
 
-    public RefreshTokenFailedEvent(String code, String msg) {
+    public RefreshTokenFailedEvent(int code, String msg) {
         this.code = code;
         this.msg = msg;
     }
 
-    public String getCode() {
+    public int getCode() {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(int code) {
         this.code = code;
     }
 
