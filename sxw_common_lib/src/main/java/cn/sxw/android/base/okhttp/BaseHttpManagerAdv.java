@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import com.google.gson.JsonSyntaxException;
 
 import java.io.File;
@@ -21,9 +23,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.sxw.android.base.net.bean.BaseResponse;
-import cn.sxw.android.base.utils.LogUtil;
-import cn.sxw.android.base.utils.JListKit;
 import cn.sxw.android.base.utils.JTextUtils;
+import cn.sxw.android.base.utils.LogUtil;
 import cn.sxw.android.base.utils.NetworkUtil;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -73,30 +74,21 @@ public class BaseHttpManagerAdv implements OkApiHelper {
 
     @Override
     public void sendGet(BaseRequest request) {
-        sendRequest(request.getActivity(),
-                request.getApi(),
-                request.getHeadMap(),
-                request,
-                request.getClz(),
-                request.getHttpCallback(),
-                METHOD_GET
-        );
+        sendRequest(request, METHOD_GET);
     }
 
     @Override
     public void sendPost(@NonNull BaseRequest request) {
-        sendRequest(request.getActivity(),
-                request.getApi(),
-                request.getHeadMap(),
-                request,
-                request.getClz(),
-                request.getHttpCallback(),
-                METHOD_POST
-        );
+        sendRequest(request, METHOD_POST);
     }
 
-    public <V> void sendRequest(Activity activity, String url, Map<String, String> headMap, BaseRequest req,
-                                Class clz, HttpCallback<BaseRequest, V> callback, int methodType) {
+    public <V> void sendRequest(BaseRequest req, int methodType) {
+        // 把部分对象抽出来
+        Activity activity = req.getActivity();
+        String url = req.getApi();
+        Map<String, String> headMap = req.getHeadMap();
+        HttpCallback<BaseRequest, V> callback = req.getHttpCallback();
+
         if (!NetworkUtil.isConnected(activity)) {
             if (canCallback(activity, callback)) {
                 mHandler.post(() -> callback.onFail(null, HttpCode.NETWORK_ERROR, "请检查网络是否连接"));
@@ -105,7 +97,7 @@ public class BaseHttpManagerAdv implements OkApiHelper {
         }
         if (canCallback(activity, callback)) {
             // 回调onStart，开发者可在onStart中显示Loading状态
-            mHandler.post(() -> callback.onStart(req));
+            mHandler.post(callback::onStart);
         }
 
         new Thread(() -> {
@@ -126,19 +118,17 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                     }
                     if (baseResponse.isRequestSuccess()) {
                         String data = baseResponse.getData();
-                        if (JTextUtils.isJsonObject(data)) {
-                            V bean = JSON.parseObject(data, (Class<V>) clz);
+                        if (JTextUtils.isJsonString(data)) {// 如果是JSON字符串，通过FastJson进行转码
+                            V bean = JSON.parseObject(data, req.getTypeReference().getType());
                             if (onResultCallback != null) onResultCallback.onSuccess(bean);
                             if (canCallback(activity, callback)) {
-                                List<V> list = JListKit.newArrayList();
-                                list.add(bean);
-                                mHandler.post(() -> callback.onResult(req, list));
+                                mHandler.post(() -> callback.onResult(req, bean));
                             }
-                        } else if (JTextUtils.isJsonList(data)) {
-                            List<V> list = JSON.parseArray(data, (Class<V>) clz);
-                            if (onResultCallback != null) onResultCallback.onSuccess(list);
+                        } else {// 非JSON字符串，直接强转类型返回
+                            V bean = (V) data;
+                            if (onResultCallback != null) onResultCallback.onSuccess(bean);
                             if (canCallback(activity, callback)) {
-                                mHandler.post(() -> callback.onResult(req, list));
+                                mHandler.post(() -> callback.onResult(req, bean));
                             }
                         }
                     } else {
@@ -182,16 +172,33 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                 if (canCallback(activity, callback)) {
                     mHandler.post(() -> callback.onFail(null, HttpCode.NOT_FOUND, "接口地址不存在！"));
                 }
-            } catch (JsonSyntaxException e) {
+            } catch (JsonSyntaxException | JSONException e) {
                 e.printStackTrace();
                 if (canCallback(activity, callback)) {
-                    mHandler.post(() -> callback.onFail(req, HttpCode.JSON_ERROR, "数据解析格式异常！"));
+                    mHandler.post(() -> {
+                        String errorMsg = e.getMessage();
+                        if (!TextUtils.isEmpty(errorMsg)) {
+                            if (errorMsg.startsWith("exepct '[', but {")) {
+                                errorMsg = "无法将对象解析成列表";
+                            } else if (errorMsg.startsWith("exepct '{', but [")) {
+                                errorMsg = "无法将对象解析成列表";
+                            }
+                        } else {
+                            errorMsg = "JSON格式错误";
+                        }
+                        callback.onFail(null, HttpCode.JSON_ERROR, errorMsg);
+                    });
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (canCallback(activity, callback)) {
+                    mHandler.post(() -> callback.onFail(null, HttpCode.OTHER_ERROR, e.getMessage()));
                 }
             }
 
             //运行结束
             if (canCallback(activity, callback)) {
-                mHandler.post(() -> callback.onFinish(req));
+                mHandler.post(callback::onFinish);
             }
         }).start();
     }
@@ -333,7 +340,7 @@ public class BaseHttpManagerAdv implements OkApiHelper {
         }
 
         if (canCallback(activity, callback)) {
-            mHandler.post(() -> callback.onStart(req));
+            mHandler.post(callback::onStart);
         }
         FileOutputStream fileOutputStream = null;
         try {
@@ -377,9 +384,7 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                             }
 
                             if (canCallback(activity, callback)) {
-                                List<File> list = JListKit.newArrayList();
-                                list.add(outFile);
-                                mHandler.post(() -> callback.onResult(req, list));
+                                mHandler.post(() -> callback.onResult(req, outFile));
                             }
 
                         } catch (IOException e) {
@@ -418,7 +423,7 @@ public class BaseHttpManagerAdv implements OkApiHelper {
 
                         //运行结束
                         if (canCallback(activity, callback)) {
-                            mHandler.post(() -> callback.onFinish(req));
+                            mHandler.post(callback::onFinish);
                         }
                     }
                 });

@@ -27,4 +27,8 @@ public class JTextUtils {
             return false;
         return s.startsWith("[") && s.endsWith("]");
     }
+
+    public static boolean isBoolean(String s) {
+        return "true".equalsIgnoreCase(s) || "false".equalsIgnoreCase(s);
+    }
 }

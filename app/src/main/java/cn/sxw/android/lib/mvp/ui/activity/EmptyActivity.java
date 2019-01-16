@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
-import com.alibaba.fastjson.JSON;
 import com.chad.library.adapter.base.BaseViewHolder;
 
 import org.androidannotations.annotations.AfterViews;
@@ -21,15 +20,13 @@ import cn.sxw.android.base.adapter.CommonRecyclerAdapter;
 import cn.sxw.android.base.bean.BlankBean;
 import cn.sxw.android.base.di.component.AppComponent;
 import cn.sxw.android.base.imageloader.ImageLoader;
-import cn.sxw.android.base.okhttp.HttpCallback;
-import cn.sxw.android.base.okhttp.HttpCode;
 import cn.sxw.android.base.okhttp.HttpUrlEncode;
 import cn.sxw.android.base.utils.JListKit;
+import cn.sxw.android.base.utils.LogUtil;
 import cn.sxw.android.lib.R;
 import cn.sxw.android.lib.di.component.DaggerEmptyComponent;
 import cn.sxw.android.lib.di.module.EmptyModule;
 import cn.sxw.android.lib.mvp.base.BaseActivityAdv;
-import cn.sxw.android.lib.mvp.model.request.TestRequest;
 import cn.sxw.android.lib.mvp.presenter.EmptyPresenter;
 import cn.sxw.android.lib.mvp.view.IEmptyView;
 
@@ -57,6 +54,9 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
     }
 
     @Click({R.id.id_btn_get_bean,
+            R.id.id_btn_get_boolean,
+            R.id.id_btn_get_string,
+            R.id.id_btn_get_integer,
             R.id.id_btn_failed,
             R.id.id_btn_error_json,
             R.id.id_btn_bad_gateway,
@@ -65,16 +65,25 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
     void onClick(View v) {
         switch (v.getId()) {
             case R.id.id_btn_get_bean:
-                getDataByOkhttp("/v2/5c35b8e63000009f0021b4a3");
+                mPresenter.getObjectByOkhttp("/v2/5c35b8e63000009f0021b4a3");
+                break;
+            case R.id.id_btn_get_boolean:
+                mPresenter.getStringByOkhttp("/v2/5c3e9f6a3500005a003e98fd");
+                break;
+            case R.id.id_btn_get_string:
+                mPresenter.getStringByOkhttp("/v2/5c3ea04e350000860a3e98ff");
+                break;
+            case R.id.id_btn_get_integer:
+                mPresenter.getStringByOkhttp("/v2/5c3ea01d35000055003e98fe");
                 break;
             case R.id.id_btn_failed:
-                getDataByOkhttp("/v2/5c35c3b9300000780021b4e9");
+                mPresenter.getObjectByOkhttp("/v2/5c35c3b9300000780021b4e9");
                 break;
             case R.id.id_btn_error_json:
-                getDataByOkhttp("/v2/5c35c41a3000007f0021b4ec");
+                mPresenter.getObjectByOkhttp("/v2/5c35c41a3000007f0021b4ec");
                 break;
             case R.id.id_btn_not_found:// 自定义接口路径
-                getDataByOkhttp("api2.test.sxw.cn");
+                mPresenter.getObjectByOkhttp("api2.test.sxw.cn");
                 break;
             case R.id.id_btn_bad_gateway:// 自定义接口路径
                 // String urlEncode2 = HttpUrlEncode.encode("http", "api2.test.sxw.cn", "/update/app/list", null);
@@ -82,7 +91,7 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
                 ConcurrentHashMap<String, String> hashMap = new ConcurrentHashMap<>();
                 hashMap.put("wd", "Android");
                 String urlEncode2 = HttpUrlEncode.encode("https://www.baidu.com/s", hashMap);
-                getDataByOkhttp(urlEncode2);
+                mPresenter.getObjectByOkhttp(urlEncode2);
                 break;
         }
     }
@@ -131,7 +140,6 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
             // 设置加载更多能力
             mAdapter.setEnableLoadMore(true);
             mAdapter.setOnLoadMoreListener(() -> {
-                currPage++;
                 getDataFromNet();
             }, mRecyclerView);
             // 默认第一次加载会进入回调，如果不需要可以配置：
@@ -141,61 +149,8 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
 
     @Override
     protected void getDataFromNet() {
-        mPresenter.getBlankData(currPage);
-
-        getDataByOkhttp("v2/5c35bf0d3000005f0021b4d8");// 返回列表
-    }
-
-    private void getDataByOkhttp(String api) {
-        // 这里注意，只需要输入API名称，无需输入HOST
-        // TestRequest request = new TestRequest(this, "v2/5c35b8e63000009f0021b4a3");
-        TestRequest request = new TestRequest(this, api);
-        // 这些参数会被转成JSON，只有是POST请求时才有用，因为这些要放进Body内，GET方式无法设置Body
-        request.setKey1("val1");
-        request.setKey2("val2");
-        // 这些参数会拼接到url
-        request.addQueryParameter("p1", 1);
-        request.addQueryParameter("p2", 2.0);
-        request.addQueryParameter("p3", "test");
-        request.addQueryParameter("p4", true);
-        // 这些参数会放到Header里
-        request.addHeader("header1", "1234567890");
-        request.addHeader("header2", "9874563210");
-
-        request.setHttpCallback(new HttpCallback<TestRequest, BlankBean>() {
-            @Override
-            public void onStart(TestRequest req) {
-                showLoading();
-            }
-
-            @Override
-            public void onResult(TestRequest req, List<BlankBean> list) {
-                // TODO 如果返回值是列表，在这里处理
-                if (list != null && list.size() > 0) {
-                    if (list.size() == 1) {
-                        BlankBean bean = list.get(0);
-                        showToast("数据加载成功，" + JSON.toJSONString(bean));
-                        tvResponse.setText("数据加载成功，JSON\n" + JSON.toJSONString(bean));
-                    } else {
-                        showToast("加载数据列表成功，共:" + list.size() + "条数据");
-                        onRequestSuccess(list);
-                    }
-                } else {
-                    onFail(req, HttpCode.NO_DATA, "暂无数据");
-                }
-            }
-
-            @Override
-            public void onFail(TestRequest req, String code, String msg) {
-                showToast("[ErrorCode = " + code + "]" + msg);
-                tvResponse.setText("[ErrorCode = " + code + "]" + msg);
-            }
-
-            @Override
-            public void onFinish(TestRequest req) {
-                hideLoading();
-            }
-        }).getData();
+        LogUtil.d("currPage = " + currPage);
+        mPresenter.getListByOkhttp("v2/5c35bf0d3000005f0021b4d8");
     }
 
     /**
@@ -213,11 +168,6 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
         if (list == null || list.size() == 0) {
             if (mItems == null || mItems.size() == 0)
                 mAdapter.setEmptyView(notDataView);
-            else {
-                if (currPage > 1)
-                    currPage--;
-                mAdapter.loadMoreFail();
-            }
             return;
         }
         showToast("数据加载成功~");
@@ -225,8 +175,8 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
         if (currPage == 1)
             mItems.clear();
         mItems.addAll(list);
-        // 模拟只加载3页数据
-        hasMoreData = currPage < 3;
+        // 模拟只加载4页数据
+        hasMoreData = currPage < 4;
 
         if (currPage == 1) {
             mAdapter.setNewData(mItems);
@@ -237,6 +187,8 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
                 mAdapter.loadMoreEnd();
             }
         }
+        // 数据加载成功后，页数+1
+        currPage++;
     }
 
     @Override
@@ -247,7 +199,12 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
             msg = getString(R.string.txt_load_data_error);
         }
         showToast(msg);
-        mAdapter.setEmptyView(errorView);
+        // 如果当前是第一页，加载失败后，显示errorView
+        if (currPage == 1) {
+            mAdapter.setEmptyView(errorView);
+        } else {// 当前不是第一页,加载失败后,会在列表底部显示重试按钮
+            mAdapter.loadMoreFail();
+        }
     }
 
     @Override
@@ -257,5 +214,10 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
             mAdapter.setEmptyView(mLoadingView);
         currPage = 1;
         getDataFromNet();
+    }
+
+    @Override
+    public TextView getTipsTextView() {
+        return tvResponse;
     }
 }

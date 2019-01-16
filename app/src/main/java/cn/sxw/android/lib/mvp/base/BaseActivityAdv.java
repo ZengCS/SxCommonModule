@@ -1,5 +1,6 @@
 package cn.sxw.android.lib.mvp.base;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -119,6 +120,11 @@ public abstract class BaseActivityAdv<P extends IPresenter> extends BaseActivity
 
     @Override
     public Context getAttachedContext() {
-        return null;
+        return this;
+    }
+
+    @Override
+    public Activity getActivity() {
+        return this;
     }
 }

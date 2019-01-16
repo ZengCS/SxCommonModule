@@ -3,6 +3,7 @@ package cn.sxw.android.base.okhttp;
 import android.app.Activity;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.annotation.JSONField;
 
 import java.util.HashMap;
@@ -24,7 +25,7 @@ public abstract class BaseRequest {
     @JSONField(serialize = false)
     private Activity activity;// 1.提供Context 2.验证是否需要回调
     @JSONField(serialize = false)
-    private Class clz;// 用于FastJson反序列化
+    private TypeReference typeReference;// 用于FastJson反序列化
 
     protected abstract <T, V> HttpCallback<T, V> getHttpCallback();
 
@@ -78,12 +79,12 @@ public abstract class BaseRequest {
         this.activity = activity;
     }
 
-    public Class getClz() {
-        return clz;
+    public TypeReference getTypeReference() {
+        return typeReference;
     }
 
-    public void setClz(Class clz) {
-        this.clz = clz;
+    public void setTypeReference(TypeReference typeReference) {
+        this.typeReference = typeReference;
     }
 
     public void postData() {

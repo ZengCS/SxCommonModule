@@ -45,6 +45,24 @@
             android:text="加载单个Bean" />
 
         <Button
+            android:id="@+id/id_btn_get_boolean"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="加载Boolean" />
+
+        <Button
+            android:id="@+id/id_btn_get_string"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="加载String" />
+
+        <Button
+            android:id="@+id/id_btn_get_integer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="加载Integer" />
+
+        <Button
             android:id="@+id/id_btn_failed"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

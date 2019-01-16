@@ -1,5 +1,6 @@
 package cn.sxw.android.base.mvp;
 
+import android.app.Activity;
 import android.content.Context;
 
 /**
@@ -44,4 +45,6 @@ public interface IViewAdvance extends IView {
     void hideSoftInput();
 
     Context getAttachedContext();
+
+    Activity getActivity();
 }
