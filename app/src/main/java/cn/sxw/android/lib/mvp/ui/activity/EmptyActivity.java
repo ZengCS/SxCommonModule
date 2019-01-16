@@ -60,10 +60,14 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
             R.id.id_btn_failed,
             R.id.id_btn_error_json,
             R.id.id_btn_bad_gateway,
+            R.id.id_btn_login,
             R.id.id_btn_not_found,
     })
     void onClick(View v) {
         switch (v.getId()) {
+            case R.id.id_btn_login:
+                mPresenter.login();
+                break;
             case R.id.id_btn_get_bean:
                 mPresenter.getObjectByOkhttp("/v2/5c35b8e63000009f0021b4a3");
                 break;

@@ -16,11 +16,14 @@ import cn.sxw.android.base.integration.AppManager;
 import cn.sxw.android.base.mvp.BasePresenter;
 import cn.sxw.android.base.okhttp.HttpCallback;
 import cn.sxw.android.base.okhttp.HttpCode;
+import cn.sxw.android.base.utils.AESUtils;
 import cn.sxw.android.base.utils.JTextUtils;
 import cn.sxw.android.lib.mvp.model.empty.IEmptyModel;
+import cn.sxw.android.lib.mvp.model.request.LoginRequest;
 import cn.sxw.android.lib.mvp.model.request.TestListRequest;
 import cn.sxw.android.lib.mvp.model.request.TestObjRequest;
 import cn.sxw.android.lib.mvp.model.request.TestStringRequest;
+import cn.sxw.android.lib.mvp.model.response.LoginResponse;
 import cn.sxw.android.lib.mvp.view.IEmptyView;
 
 @PerActivity
@@ -191,4 +194,39 @@ public class EmptyPresenter extends BasePresenter<IEmptyModel, IEmptyView> {
         }).getData();
     }
 
+    public void login() {
+        String api = "http://api2.test.sxw.cn/passport/api/auth/login";
+        LoginRequest loginRequest = new LoginRequest(mRootView.getActivity(), api);
+        loginRequest.setAccount("510101201703290022");
+        try {
+            loginRequest.setPassword(AESUtils.Encrypt("111111"));
+        } catch (Exception e) {
+            loginRequest.setPassword("111111");
+        }
+        loginRequest.setHttpCallback(new HttpCallback<LoginRequest, LoginResponse>() {
+            @Override
+            public void onStart() {
+                mRootView.showLoading("登陆中...");
+            }
+
+            @Override
+            public void onResult(LoginRequest req, LoginResponse result) {
+                // TODO 缓存当前登录信息
+                mModel.updateToken(result);
+
+                // 告知登录成功
+                mRootView.getTipsTextView().setText("登陆成功：" + JSON.toJSONString(result));
+            }
+
+            @Override
+            public void onFail(LoginRequest req, String code, String msg) {
+                mRootView.getTipsTextView().setText("登陆失败:" + msg);
+            }
+
+            @Override
+            public void onFinish() {
+                mRootView.hideLoading();
+            }
+        }).postData();
+    }
 }

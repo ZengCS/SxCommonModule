@@ -3,6 +3,7 @@ package cn.sxw.android.base.cache;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import cn.sxw.android.base.ui.BaseApplication;
 import cn.sxw.android.base.utils.LogUtil;
 
 /**
@@ -16,37 +17,10 @@ public class SharedPreferencesUtil {
     /**
      * 保存在手机里面的文件名
      */
-    private static final String FILE_NAME = "SXW_LAUNCHER_V1";
+    private static final String FILE_NAME = "SXW_LAUNCHER_V2";
 
     public static SharedPreferences getSharedPreferences(Context context) {
         return context.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
-    }
-
-    public static final String KEY_REBOOT_FLAG = "KEY_REBOOT_FLAG";
-
-    /**
-     * 策略相关
-     */
-    public class Policy {
-        public static final String SERVER_VERSION_CODE = "POLICY_SERVER_VERSION_CODE";
-        public static final String LOCAL_VERSION_CODE = "POLICY_LOCAL_VERSION_CODE";
-        public static final String HEART_TIME = "POLICY_HEART_TIME";
-        public static final String SYNC_TIME = "POLICY_SYNC_TIME";
-        public static final String CONTENT = "POLICY_CONTENT";
-        public static final String TARGET_RULE = "POLICY_TARGET_RULE";
-        public static final String TARGET_TIME_CATEGORY = "POLICY_TARGET_TIME_CATEGORY";
-        public static final String APP_TYPES = "POLICY_APP_TYPES";
-        public static final String RULE_VERSION_DTO = "POLICY_RULE_VERSION_DTO";
-        public static final String ALL_TIME_APP_LIST = "POLICY_ALL_TIME_APP_LIST";
-        public static final String USER_APP_LIST = "POLICY_USER_APP_LIST";
-    }
-
-    public class Account {
-        public static final String IS_LOGIN = "IS_LOGIN";
-        public static final String ACCOUNT_INFO = "ACCOUNT_INFO";
-        public static final String ACCOUNT_BIND_INFO = "ACCOUNT_BIND_INFO";
-        public static final String PUSH_CLIENT_ID = "PUSH_CLIENT_ID";
-        public static final String KEY_CURR_ENVIRONMENT = "KEY_CURR_ENVIRONMENT_V2";
     }
 
     public static String getCustomKey(String key, String accountId) {
@@ -56,15 +30,14 @@ public class SharedPreferencesUtil {
     /**
      * 保存数据的方法，我们需要拿到保存数据的具体类型，然后根据类型调用不同的保存方法
      *
-     * @param context
      * @param key
      * @param object
      */
-    public static void setParam(Context context, String key, Object object) {
+    public static void setParam(String key, Object object) {
         try {
             if (object == null)
                 return;
-
+            Context context = BaseApplication.getContext();
             String type = object.getClass().getSimpleName();
             SharedPreferences sp = context.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sp.edit();
@@ -91,12 +64,13 @@ public class SharedPreferencesUtil {
     /**
      * 得到保存数据的方法，我们根据默认值得到保存的数据的具体类型，然后调用相对于的方法获取值
      *
-     * @param context
      * @param key
      * @param defaultObject
      * @return
      */
-    public static Object getParam(Context context, String key, Object defaultObject) {
+    public static Object getParam(String key, Object defaultObject) {
+        Context context = BaseApplication.getContext();
+
         String type = defaultObject.getClass().getSimpleName();
         SharedPreferences sp = context.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
 
@@ -114,16 +88,16 @@ public class SharedPreferencesUtil {
         return null;
     }
 
-    public static Boolean getBoolean(Context context, String key, Object defaultObject) {
-        return (Boolean) getParam(context, key, defaultObject);
+    public static Boolean getBoolean(String key, Object defaultObject) {
+        return (Boolean) getParam(key, defaultObject);
     }
 
-    public static String getString(Context context, String key, Object defaultObject) {
-        return (String) getParam(context, key, defaultObject);
+    public static String getString(String key, Object defaultObject) {
+        return (String) getParam(key, defaultObject);
     }
 
-    public static int getInt(Context context, String key, Object defaultObject) {
-        return (int) getParam(context, key, defaultObject);
+    public static int getInt(String key, Object defaultObject) {
+        return (int) getParam(key, defaultObject);
     }
 
 }

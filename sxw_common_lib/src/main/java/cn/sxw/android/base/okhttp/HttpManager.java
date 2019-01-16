@@ -18,6 +18,8 @@ public class HttpManager implements OkApiHelper {
     private Map<String, String> globalHeaderMap = new HashMap<>();// 全局Header
     private String host;
     private String scheme = "http";
+    // 用于刷新Token
+    private String refreshToken;
 
     public static HttpManager getInstance() {
         if (sHttpManager == null) {
@@ -91,5 +93,13 @@ public class HttpManager implements OkApiHelper {
     public void sendGet(BaseRequest request) {
         request.getHeadMap().putAll(globalHeaderMap);
         mHttp.sendGet(request);
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
     }
 }

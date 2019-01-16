@@ -1,7 +1,5 @@
 package cn.sxw.android.lib;
 
-import java.util.UUID;
-
 import cn.sxw.android.base.okhttp.HttpManager;
 import cn.sxw.android.base.ui.BaseApplication;
 
@@ -21,7 +19,7 @@ public class LocalApplication extends BaseApplication {
         String host = "api2.test.sxw.cn";
         host = "www.mocky.io";
 
-        HttpManager.getInstance().setTokenHeader(UUID.randomUUID().toString())
+        HttpManager.getInstance()
                 .setScheme("http")// 默认是http，如果使用https时，必须设置
                 .setHost(host);// 这里不要写 http://
 

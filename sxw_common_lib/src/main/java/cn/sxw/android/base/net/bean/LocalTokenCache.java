@@ -1,7 +1,5 @@
 package cn.sxw.android.base.net.bean;
 
-import org.xutils.x;
-
 import cn.sxw.android.base.cache.SharedPreferencesUtil;
 
 /**
@@ -15,19 +13,19 @@ public class LocalTokenCache {
     private static String CURR_TIME_REFRESH_TOKEN = "KEY_CURR_TIME_REFRESH_TOKEN";
 
     public static String getLocalCacheToken() {
-        return SharedPreferencesUtil.getString(x.app(), CURR_TIME_TOKEN, "");
+        return SharedPreferencesUtil.getString(CURR_TIME_TOKEN, "");
     }
 
     public static void setLocalCacheToken(String token) {
-        SharedPreferencesUtil.setParam(x.app(), CURR_TIME_TOKEN, token);
+        SharedPreferencesUtil.setParam(CURR_TIME_TOKEN, token);
     }
 
     public static String getLocalCacheRefreshToken() {
-        return SharedPreferencesUtil.getString(x.app(), CURR_TIME_REFRESH_TOKEN, "");
+        return SharedPreferencesUtil.getString(CURR_TIME_REFRESH_TOKEN, "");
     }
 
     public static void setLocalCacheRefreshToken(String refreshToken) {
-        SharedPreferencesUtil.setParam(x.app(), CURR_TIME_REFRESH_TOKEN, refreshToken);
+        SharedPreferencesUtil.setParam(CURR_TIME_REFRESH_TOKEN, refreshToken);
     }
 
     public static void cleanTokenCache() {
