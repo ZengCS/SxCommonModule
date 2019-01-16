@@ -9,7 +9,6 @@ import cn.sxw.android.base.di.module.ImageModule;
 import cn.sxw.android.base.imageloader.ImageLoader;
 import cn.sxw.android.base.integration.AppManager;
 import cn.sxw.android.base.net.ApiHelper;
-import cn.sxw.android.base.prefer.PreferencesHelper;
 import cn.sxw.android.base.ui.BaseApplication;
 import dagger.Component;
 
@@ -24,8 +23,6 @@ public interface AppComponent {
 
     //用于管理所有activity
     AppManager appManager();
-
-    PreferencesHelper preferencesHelper();
 
     ApiHelper httpRequestHelper();
 
