@@ -7,7 +7,15 @@ package cn.sxw.android.base.okhttp;
  */
 
 public interface OkApiHelper {
+    int METHOD_UNKNOWN = -1;
+    int METHOD_GET = 0;
+    int METHOD_POST = 1;
+    int METHOD_PUT = 2;
+    int METHOD_DELETE = 3;
+
     void sendPost(BaseRequest request);
 
     void sendGet(BaseRequest request);
+
+    void refreshToken(BaseRequest request);
 }

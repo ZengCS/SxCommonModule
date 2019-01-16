@@ -59,35 +59,43 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
             R.id.id_btn_get_integer,
             R.id.id_btn_failed,
             R.id.id_btn_error_json,
+            R.id.id_btn_refresh_token,
             R.id.id_btn_bad_gateway,
             R.id.id_btn_login,
+            R.id.id_btn_token_expired,
             R.id.id_btn_not_found,
     })
     void onClick(View v) {
         switch (v.getId()) {
+            case R.id.id_btn_refresh_token:
+                mPresenter.forceRefreshToken();
+                break;
+            case R.id.id_btn_token_expired:
+                mPresenter.getStringByOkhttp("http://www.mocky.io/v2/5c3eeb293500002d003e9a63");
+                break;
             case R.id.id_btn_login:
                 mPresenter.login();
                 break;
             case R.id.id_btn_get_bean:
-                mPresenter.getObjectByOkhttp("/v2/5c35b8e63000009f0021b4a3");
+                mPresenter.getObjectByOkhttp("http://www.mocky.io/v2/5c35b8e63000009f0021b4a3");
                 break;
             case R.id.id_btn_get_boolean:
-                mPresenter.getStringByOkhttp("/v2/5c3e9f6a3500005a003e98fd");
+                mPresenter.getStringByOkhttp("http://www.mocky.io/v2/5c3e9f6a3500005a003e98fd");
                 break;
             case R.id.id_btn_get_string:
-                mPresenter.getStringByOkhttp("/v2/5c3ea04e350000860a3e98ff");
+                mPresenter.getStringByOkhttp("http://www.mocky.io/v2/5c3ea04e350000860a3e98ff");
                 break;
             case R.id.id_btn_get_integer:
-                mPresenter.getStringByOkhttp("/v2/5c3ea01d35000055003e98fe");
+                mPresenter.getStringByOkhttp("http://www.mocky.io/v2/5c3ea01d35000055003e98fe");
                 break;
             case R.id.id_btn_failed:
-                mPresenter.getObjectByOkhttp("/v2/5c35c3b9300000780021b4e9");
+                mPresenter.getObjectByOkhttp("http://www.mocky.io/v2/5c35c3b9300000780021b4e9");
                 break;
             case R.id.id_btn_error_json:
-                mPresenter.getObjectByOkhttp("/v2/5c35c41a3000007f0021b4ec");
+                mPresenter.getObjectByOkhttp("http://www.mocky.io/v2/5c35c41a3000007f0021b4ec");
                 break;
             case R.id.id_btn_not_found:// 自定义接口路径
-                mPresenter.getObjectByOkhttp("api2.test.sxw.cn");
+                mPresenter.getObjectByOkhttp("/update/app/errorapi");
                 break;
             case R.id.id_btn_bad_gateway:// 自定义接口路径
                 // String urlEncode2 = HttpUrlEncode.encode("http", "api2.test.sxw.cn", "/update/app/list", null);
@@ -154,7 +162,7 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
     @Override
     protected void getDataFromNet() {
         LogUtil.d("currPage = " + currPage);
-        mPresenter.getListByOkhttp("v2/5c35bf0d3000005f0021b4d8");
+        mPresenter.getListByOkhttp("http://www.mocky.io/v2/5c35bf0d3000005f0021b4d8");
     }
 
     /**

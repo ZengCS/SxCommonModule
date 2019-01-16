@@ -26,6 +26,10 @@ public abstract class BaseRequest {
     private Activity activity;// 1.提供Context 2.验证是否需要回调
     @JSONField(serialize = false)
     private TypeReference typeReference;// 用于FastJson反序列化
+    @JSONField(serialize = false)
+    private int methodType = OkApiHelper.METHOD_UNKNOWN;
+    @JSONField(serialize = false)
+    private boolean allowRefreshToken = true;
 
     protected abstract <T, V> HttpCallback<T, V> getHttpCallback();
 
@@ -95,7 +99,27 @@ public abstract class BaseRequest {
         HttpManager.getInstance().sendGet(this);
     }
 
+    public void refreshToken(){
+        HttpManager.getInstance().refreshToken(this);
+    }
+
     public String toJson() {
         return JSON.toJSONString(this);
+    }
+
+    public void setMethodType(int methodType) {
+        this.methodType = methodType;
+    }
+
+    public int getMethodType() {
+        return methodType;
+    }
+
+    public boolean isAllowRefreshToken() {
+        return allowRefreshToken;
+    }
+
+    public void setAllowRefreshToken(boolean allowRefreshToken) {
+        this.allowRefreshToken = allowRefreshToken;
     }
 }

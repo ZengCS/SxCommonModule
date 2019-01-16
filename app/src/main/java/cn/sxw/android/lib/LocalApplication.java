@@ -1,5 +1,6 @@
 package cn.sxw.android.lib;
 
+import cn.sxw.android.base.net.bean.LocalTokenCache;
 import cn.sxw.android.base.okhttp.HttpManager;
 import cn.sxw.android.base.ui.BaseApplication;
 
@@ -17,9 +18,10 @@ public class LocalApplication extends BaseApplication {
         // 初始化HttpManager
         // For test http://www.mocky.io/v2/5c35b8e63000009f0021b4a3
         String host = "api2.test.sxw.cn";
-        host = "www.mocky.io";
 
         HttpManager.getInstance()
+                .setTokenHeader(LocalTokenCache.getLocalCacheToken())
+                .setRefreshToken(LocalTokenCache.getLocalCacheRefreshToken())
                 .setScheme("http")// 默认是http，如果使用https时，必须设置
                 .setHost(host);// 这里不要写 http://
 

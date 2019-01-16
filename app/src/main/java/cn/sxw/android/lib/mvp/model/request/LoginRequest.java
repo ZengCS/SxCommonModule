@@ -7,7 +7,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 
 import cn.sxw.android.base.okhttp.BaseRequest;
 import cn.sxw.android.base.okhttp.HttpCallback;
-import cn.sxw.android.lib.mvp.model.response.LoginResponse;
+import cn.sxw.android.base.okhttp.response.LoginResponse;
 
 /**
  * Created by ZengCS on 2019/1/9.

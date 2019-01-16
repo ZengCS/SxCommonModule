@@ -31,12 +31,20 @@
         app:layout_constraintStart_toEndOf="@id/swipe_refresh_layout_common"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/id_tv_response_info"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="10px"
-            android:text="这里显示具体的Response信息" />
+            android:layout_height="110px"
+            android:background="#DDD"
+            android:elevation="3dp">
+
+            <TextView
+                android:id="@+id/id_tv_response_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10px"
+                android:text="这里显示具体的Response信息" />
+
+        </ScrollView>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -56,6 +64,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="模拟登陆" />
+
+                <Button
+                    android:id="@+id/id_btn_token_expired"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="模拟TOKEN过期" />
+
+                <Button
+                    android:id="@+id/id_btn_refresh_token"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="强制刷新TOKEN" />
             </LinearLayout>
 
             <LinearLayout

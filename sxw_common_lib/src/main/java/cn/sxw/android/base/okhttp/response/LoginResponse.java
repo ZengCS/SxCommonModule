@@ -1,4 +1,4 @@
-package cn.sxw.android.lib.mvp.model.response;
+package cn.sxw.android.base.okhttp.response;
 
 /**
  * Created by ZengCS on 2019/1/16.

@@ -23,6 +23,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.sxw.android.base.net.bean.BaseResponse;
+import cn.sxw.android.base.net.bean.LocalTokenCache;
+import cn.sxw.android.base.okhttp.request.RefreshTokenRequest;
+import cn.sxw.android.base.okhttp.response.LoginResponse;
 import cn.sxw.android.base.utils.JTextUtils;
 import cn.sxw.android.base.utils.LogUtil;
 import cn.sxw.android.base.utils.NetworkUtil;
@@ -42,10 +45,6 @@ import okhttp3.ResponseBody;
  * @date 2018/07/16 13:17
  */
 public class BaseHttpManagerAdv implements OkApiHelper {
-    private static final int METHOD_GET = 0;
-    private static final int METHOD_POST = 1;
-    private static final int METHOD_PUT = 2;
-    private static final int METHOD_DELETE = 3;
     private static final String[] METHOD_NAMES = {"GET", "POST", "PUT", "DELETE"};
 
     private static BaseHttpManagerAdv sInstance = null;
@@ -73,17 +72,81 @@ public class BaseHttpManagerAdv implements OkApiHelper {
     }
 
     @Override
-    public void sendGet(BaseRequest request) {
-        sendRequest(request, METHOD_GET);
+    public void sendPost(@NonNull BaseRequest request) {
+        request.setMethodType(METHOD_POST);
+        sendRequest(request);
     }
 
     @Override
-    public void sendPost(@NonNull BaseRequest request) {
-        sendRequest(request, METHOD_POST);
+    public void sendGet(BaseRequest request) {
+        request.setMethodType(METHOD_GET);
+        sendRequest(request);
     }
 
-    public <V> void sendRequest(BaseRequest req, int methodType) {
+    private HttpCallback<RefreshTokenRequest, LoginResponse> httpCallback = null;
+
+    @Override
+    public void refreshToken(@NonNull BaseRequest lastRequest) {
+        if (!lastRequest.isAllowRefreshToken()) {
+            LogUtil.methodStepHttp("当前请求已经触发过一次刷新TOKEN的操作了，不能重复触发。");
+            return;
+        }
+        // 设置标记，表示当前已经刷新过Token了,防止一直刷的死循环
+        lastRequest.setAllowRefreshToken(false);
+        // 设置主动刷新回调
+        if (lastRequest instanceof RefreshTokenRequest) {
+            httpCallback = lastRequest.getHttpCallback();
+        } else {
+            httpCallback = null;
+        }
+
+        RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest(lastRequest);
+        refreshTokenRequest.addHeader("TOKEN", HttpManager.getInstance().getRefreshToken());
+        refreshTokenRequest.setHttpCallback(new HttpCallback<RefreshTokenRequest, LoginResponse>() {
+            @Override
+            public void onStart() {
+                if (httpCallback != null)
+                    httpCallback.onStart();
+            }
+
+            @Override
+            public void onResult(RefreshTokenRequest req, LoginResponse loginResponse) {
+                LogUtil.methodStepHttp("刷新TOKEN成功,\n" + JSON.toJSONString(loginResponse));
+                // 缓存TOKEN
+                LocalTokenCache.setLocalCacheToken(loginResponse.getToken());
+                LocalTokenCache.setLocalCacheRefreshToken(loginResponse.getRefreshToken());
+                // 同步TOKEN
+                HttpManager.getInstance().setTokenHeader(loginResponse.getToken());
+                HttpManager.getInstance().setRefreshToken(loginResponse.getRefreshToken());
+                if (!(lastRequest instanceof RefreshTokenRequest)) {
+                    // 重发上一次的请求
+                    sendRequest(lastRequest);
+                } else if (httpCallback != null) {
+                    httpCallback.onResult(req, loginResponse);
+                }
+            }
+
+            @Override
+            public void onFail(RefreshTokenRequest req, String code, String msg) {
+                LogUtil.methodStepHttp("刷新TOKEN失败");
+                LogUtil.methodStepHttp("code = " + code);
+                LogUtil.methodStepHttp("msg = " + msg);
+                if (httpCallback != null)
+                    httpCallback.onFail(req, code, msg);
+            }
+
+            @Override
+            public void onFinish() {
+                if (httpCallback != null)
+                    httpCallback.onFinish();
+            }
+        });
+        sendGet(refreshTokenRequest);
+    }
+
+    public <V> void sendRequest(BaseRequest req) {
         // 把部分对象抽出来
+        int methodType = req.getMethodType();
         Activity activity = req.getActivity();
         String url = req.getApi();
         Map<String, String> headMap = req.getHeadMap();
@@ -132,10 +195,16 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                             }
                         }
                     } else {
+                        int code = baseResponse.getCode();
+                        if (code == HttpCode.TOKEN_HAVE_EXPIRED) {
+                            // Token已过期，在这里刷新Token
+                            refreshToken(req);
+                            return;
+                        }
                         if (onResultCallback != null)
                             onResultCallback.onError(req, baseResponse.getMessage());
                         if (canCallback(activity, callback)) {
-                            mHandler.post(() -> callback.onFail(req, String.valueOf(baseResponse.getCode()), baseResponse.getMessage()));
+                            mHandler.post(() -> callback.onFail(req, String.valueOf(code), baseResponse.getMessage()));
                         }
                     }
                 } else if (response.contains("403") || response.contains("Forbidden")) {
@@ -214,10 +283,14 @@ public class BaseHttpManagerAdv implements OkApiHelper {
     private String execute(String url, Map<String, String> headMap, String jsonString, int methodType) throws IOException {
         LogUtil.methodStartHttp("发送Http请求");
         LogUtil.methodStepHttp("API = " + url);
-        LogUtil.methodStepHttp("bodyParam = " + jsonString);
+        LogUtil.methodStepHttp("METHOD = @" + METHOD_NAMES[methodType]);
 
         // 设置请求参数体
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonString);
+        RequestBody requestBody = null;
+        if (methodType != METHOD_GET) {// GET类型请求不能设置RequestBody
+            LogUtil.methodStepHttp("bodyParam = " + jsonString);
+            requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonString);
+        }
 
         // 设置Request对象
         Request.Builder requestBuilder = new Request.Builder().url(url);
@@ -255,7 +328,9 @@ public class BaseHttpManagerAdv implements OkApiHelper {
         String bodyString = "";
         if (body != null)
             bodyString = body.string().trim();
+        LogUtil.methodStepHttp("====================== Response Start ======================");
         LogUtil.methodStepHttp(bodyString);
+        LogUtil.methodStepHttp("====================== Response End ======================");
         return bodyString;
     }
 

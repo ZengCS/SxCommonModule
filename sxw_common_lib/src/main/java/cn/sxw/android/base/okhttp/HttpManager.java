@@ -95,8 +95,14 @@ public class HttpManager implements OkApiHelper {
         mHttp.sendGet(request);
     }
 
-    public void setRefreshToken(String refreshToken) {
+    @Override
+    public void refreshToken(BaseRequest request) {
+        mHttp.refreshToken(request);
+    }
+
+    public HttpManager setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+        return this;
     }
 
     public String getRefreshToken() {

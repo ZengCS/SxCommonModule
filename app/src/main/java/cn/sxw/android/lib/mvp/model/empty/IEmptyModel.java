@@ -5,7 +5,7 @@ import java.util.List;
 import cn.sxw.android.base.bean.BlankBean;
 import cn.sxw.android.base.mvp.IModel;
 import cn.sxw.android.lib.mvp.model.request.TestListRequest;
-import cn.sxw.android.lib.mvp.model.response.LoginResponse;
+import cn.sxw.android.base.okhttp.response.LoginResponse;
 
 public interface IEmptyModel extends IModel {
     /**

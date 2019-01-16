@@ -16,6 +16,8 @@ import cn.sxw.android.base.integration.AppManager;
 import cn.sxw.android.base.mvp.BasePresenter;
 import cn.sxw.android.base.okhttp.HttpCallback;
 import cn.sxw.android.base.okhttp.HttpCode;
+import cn.sxw.android.base.okhttp.request.RefreshTokenRequest;
+import cn.sxw.android.base.okhttp.response.LoginResponse;
 import cn.sxw.android.base.utils.AESUtils;
 import cn.sxw.android.base.utils.JTextUtils;
 import cn.sxw.android.lib.mvp.model.empty.IEmptyModel;
@@ -23,7 +25,6 @@ import cn.sxw.android.lib.mvp.model.request.LoginRequest;
 import cn.sxw.android.lib.mvp.model.request.TestListRequest;
 import cn.sxw.android.lib.mvp.model.request.TestObjRequest;
 import cn.sxw.android.lib.mvp.model.request.TestStringRequest;
-import cn.sxw.android.lib.mvp.model.response.LoginResponse;
 import cn.sxw.android.lib.mvp.view.IEmptyView;
 
 @PerActivity
@@ -195,7 +196,7 @@ public class EmptyPresenter extends BasePresenter<IEmptyModel, IEmptyView> {
     }
 
     public void login() {
-        String api = "http://api2.test.sxw.cn/passport/api/auth/login";
+        String api = "/passport/api/auth/login";
         LoginRequest loginRequest = new LoginRequest(mRootView.getActivity(), api);
         loginRequest.setAccount("510101201703290022");
         try {
@@ -210,12 +211,12 @@ public class EmptyPresenter extends BasePresenter<IEmptyModel, IEmptyView> {
             }
 
             @Override
-            public void onResult(LoginRequest req, LoginResponse result) {
+            public void onResult(LoginRequest req, LoginResponse loginResponse) {
                 // TODO 缓存当前登录信息
-                mModel.updateToken(result);
+                mModel.updateToken(loginResponse);
 
                 // 告知登录成功
-                mRootView.getTipsTextView().setText("登陆成功：" + JSON.toJSONString(result));
+                mRootView.getTipsTextView().setText("登陆成功：" + JSON.toJSONString(loginResponse));
             }
 
             @Override
@@ -228,5 +229,37 @@ public class EmptyPresenter extends BasePresenter<IEmptyModel, IEmptyView> {
                 mRootView.hideLoading();
             }
         }).postData();
+    }
+
+    /**
+     * 强刷TOKEN
+     */
+    public void forceRefreshToken() {
+        RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest(mRootView.getActivity());
+        refreshTokenRequest.setHttpCallback(new HttpCallback<RefreshTokenRequest, LoginResponse>() {
+            @Override
+            public void onStart() {
+                mRootView.forceShowLoading("正在刷新TOKEN");
+            }
+
+            @Override
+            public void onResult(RefreshTokenRequest req, LoginResponse loginResponse) {
+                // 内部已经对TOKEN数据进行了更新，这里无需手动更新
+                // mModel.updateToken(loginResponse);
+
+                mRootView.showToast("刷新TOKEN成功");
+                mRootView.getTipsTextView().setText(JSON.toJSONString(loginResponse));
+            }
+
+            @Override
+            public void onFail(RefreshTokenRequest req, String code, String msg) {
+                mRootView.showToast("刷新TOKEN失败，" + msg);
+            }
+
+            @Override
+            public void onFinish() {
+                mRootView.hideLoading();
+            }
+        }).refreshToken();
     }
 }
