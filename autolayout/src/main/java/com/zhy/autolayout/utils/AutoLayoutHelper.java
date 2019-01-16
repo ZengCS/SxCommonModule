@@ -43,8 +43,7 @@ import com.zhy.autolayout.attr.TextSizeAttr;
 import com.zhy.autolayout.attr.WidthAttr;
 import com.zhy.autolayout.config.AutoLayoutConfig;
 
-public class AutoLayoutHelper
-{
+public class AutoLayoutHelper {
     private final ViewGroup mHost;
 
     private static final int[] LL = new int[]
@@ -94,39 +93,32 @@ public class AutoLayoutHelper
      */
     private static AutoLayoutConfig mAutoLayoutConfig;
 
-    public AutoLayoutHelper(ViewGroup host)
-    {
+    public AutoLayoutHelper(ViewGroup host) {
         mHost = host;
 
-        if (mAutoLayoutConfig == null)
-        {
+        if (mAutoLayoutConfig == null) {
             initAutoLayoutConfig(host);
         }
 
     }
 
-    private void initAutoLayoutConfig(ViewGroup host)
-    {
+    private void initAutoLayoutConfig(ViewGroup host) {
         mAutoLayoutConfig = AutoLayoutConfig.getInstance();
         mAutoLayoutConfig.init(host.getContext());
     }
 
 
-    public void adjustChildren()
-    {
+    public void adjustChildren() {
         AutoLayoutConfig.getInstance().checkParams();
 
-        for (int i = 0, n = mHost.getChildCount(); i < n; i++)
-        {
+        for (int i = 0, n = mHost.getChildCount(); i < n; i++) {
             View view = mHost.getChildAt(i);
             ViewGroup.LayoutParams params = view.getLayoutParams();
 
-            if (params instanceof AutoLayoutParams)
-            {
+            if (params instanceof AutoLayoutParams) {
                 AutoLayoutInfo info =
                         ((AutoLayoutParams) params).getAutoLayoutInfo();
-                if (info != null)
-                {
+                if (info != null) {
                     info.fillAttrs(view);
                 }
             }
@@ -135,8 +127,7 @@ public class AutoLayoutHelper
     }
 
     public static AutoLayoutInfo getAutoLayoutInfo(Context context,
-                                                   AttributeSet attrs)
-    {
+                                                   AttributeSet attrs) {
 
         AutoLayoutInfo info = new AutoLayoutInfo();
 
@@ -150,8 +141,7 @@ public class AutoLayoutHelper
         int n = array.getIndexCount();
 
 
-        for (int i = 0; i < n; i++)
-        {
+        for (int i = 0; i < n; i++) {
             int index = array.getIndex(i);
 //            String val = array.getString(index);
 //            if (!isPxVal(val)) continue;
@@ -159,15 +149,13 @@ public class AutoLayoutHelper
             if (!DimenUtils.isPxVal(array.peekValue(index))) continue;
 
             int pxVal = 0;
-            try
-            {
+            try {
                 pxVal = array.getDimensionPixelOffset(index, 0);
             } catch (Exception ignore)//not dimension
             {
                 continue;
             }
-            switch (index)
-            {
+            switch (index) {
                 case INDEX_TEXT_SIZE:
                     info.addAttr(new TextSizeAttr(pxVal, baseWidth, baseHeight));
                     break;
@@ -226,8 +214,7 @@ public class AutoLayoutHelper
         return info;
     }
 
-    public interface AutoLayoutParams
-    {
+    public interface AutoLayoutParams {
         AutoLayoutInfo getAutoLayoutInfo();
     }
 }
