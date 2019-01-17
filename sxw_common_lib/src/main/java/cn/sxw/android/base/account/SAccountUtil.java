@@ -91,7 +91,7 @@ public class SAccountUtil {
     /**
      * 获取学生姓名
      */
-    public static String getTeacherName() {
+    public static String getStudentName() {
         getLoginedAccount();
         if (userInfoResponse != null) {
             UserSimpleDTO userSimpleDTO = userInfoResponse.getUserSimpleDTO();
@@ -100,20 +100,6 @@ public class SAccountUtil {
         }
         return "学生姓名-未知";
     }
-
-    /**
-     * 获取学生身份证
-     */
-    public static String getTeacherIdNumber() {
-        getLoginedAccount();
-        if (userInfoResponse != null) {
-            UserSimpleDTO userSimpleDTO = userInfoResponse.getUserSimpleDTO();
-            if (userSimpleDTO != null)
-                return userSimpleDTO.getIdnumber();
-        }
-        return "身份证-未知";
-    }
-
 
     /**
      * 获取头像地址

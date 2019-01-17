@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
+import cn.sxw.android.base.account.SAccountUtil;
 import cn.sxw.android.base.bean.LoginInfoBean;
 import cn.sxw.android.base.bean.SSODetailBean;
 import cn.sxw.android.base.bean.user.UserInfoResponse;
@@ -52,13 +53,17 @@ public class SxwMobileSSOUtil {
     public static SSODetailBean getSSODetailBean(Boolean... forceRefresh) {
         if (forceRefresh != null && forceRefresh.length > 0 && forceRefresh[0]) {
             mSSODetailBean = null;
-        } else if (mSSODetailBean != null)
+        } else if (mSSODetailBean != null) {
+            SAccountUtil.saveLoginInfo(mSSODetailBean.getUserInfoResponse());
             return mSSODetailBean;
+        }
 
         try {
             String ssoInfo = getSSOInfo();
             if (JTextUtils.isJsonObject(ssoInfo)) {
                 mSSODetailBean = JSON.parseObject(ssoInfo, SSODetailBean.class);
+                if (mSSODetailBean != null)
+                    SAccountUtil.saveLoginInfo(mSSODetailBean.getUserInfoResponse());
                 return mSSODetailBean;
             }
         } catch (Exception e) {

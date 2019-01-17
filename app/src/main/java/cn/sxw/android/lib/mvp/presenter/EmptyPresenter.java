@@ -26,7 +26,7 @@ import cn.sxw.android.lib.mvp.model.empty.IEmptyModel;
 import cn.sxw.android.lib.mvp.model.request.TestListRequest;
 import cn.sxw.android.lib.mvp.model.request.TestObjRequest;
 import cn.sxw.android.lib.mvp.model.request.TestStringRequest;
-import cn.sxw.android.lib.mvp.model.request.UserInfoRequest;
+import cn.sxw.android.base.okhttp.request.UserInfoRequest;
 import cn.sxw.android.lib.mvp.view.IEmptyView;
 
 @PerActivity

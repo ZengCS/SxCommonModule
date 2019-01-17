@@ -1,4 +1,4 @@
-package cn.sxw.android.lib.mvp.model.request;
+package cn.sxw.android.base.okhttp.request;
 
 import android.app.Activity;
 
