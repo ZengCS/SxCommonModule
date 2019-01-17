@@ -46,18 +46,18 @@ public class CustomNetConfig {
         };
 
         static final String[] MDM_APIS = {
-                "http://api2.sxw.cn/mdc2/api/",     // 生产环境
-                "http://api2.pre.sxw.cn/mdc2/api/", // 预发布
-                "http://api2.test.sxw.cn/mdc2/api/",// 测试
-                "http://api2.dev.sxw.cn/mdc2/api/"  // 开发
+                SXW_BASE_APIS[0].concat("/mdc2/api/"),// 生产环境
+                SXW_BASE_APIS[1].concat("/mdc2/api/"),// 预发布
+                SXW_BASE_APIS[2].concat("/mdc2/api/"),// 测试
+                SXW_BASE_APIS[3].concat("/mdc2/api/"),// 开发
         };
 
         // 版本检测
         static final String[] SXW_UPDATE_APIS = {
-                "http://api2.sxw.cn/update/",      // 生产环境
-                "http://api2.pre.sxw.cn/update/",  // 预发布环境域名
-                "http://api2.test.sxw.cn/update/", // 测试环境域名
-                "http://api2.dev.sxw.cn/update/",  // 开发环境域名
+                SXW_BASE_APIS[0].concat("/update/"),// 生产环境
+                SXW_BASE_APIS[1].concat("/update/"),// 预发布环境域名
+                SXW_BASE_APIS[2].concat("/update/"),// 测试环境域名
+                SXW_BASE_APIS[3].concat("/update/"),// 开发环境域名
         };
     }
 

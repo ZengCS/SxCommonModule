@@ -1,12 +1,18 @@
 package cn.sxw.android.base.utils;
 
 import android.os.Environment;
-import android.support.annotation.NonNull;
 import android.util.Log;
+
+import com.alibaba.fastjson.JSON;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+
+import cn.sxw.android.base.bean.LoginInfoBean;
+import cn.sxw.android.base.bean.SSODetailBean;
+import cn.sxw.android.base.bean.user.UserInfoResponse;
+import cn.sxw.android.base.okhttp.response.LoginResponse;
 
 /**
  * Created by ZengCS on 2018/7/18.
@@ -19,6 +25,7 @@ public class SxwMobileSSOUtil {
     private static final String FILE_PATH = "sxw/app/common/auth/";
     private static final String FILE_NAME = "account.data";
     private static final String TAG = "SxwMobileSSOUtil";
+    private static SSODetailBean mSSODetailBean;
 
     /**
      * 获取单点登录信息
@@ -37,11 +44,75 @@ public class SxwMobileSSOUtil {
     }
 
     /**
+     * 获取单点登录信息对象
+     *
+     * @param forceRefresh 强制刷新，不读取内存中的缓存数据
+     * @return 返回SSODetailBean
+     */
+    public static SSODetailBean getSSODetailBean(Boolean... forceRefresh) {
+        if (forceRefresh != null && forceRefresh.length > 0 && forceRefresh[0]) {
+            mSSODetailBean = null;
+        } else if (mSSODetailBean != null)
+            return mSSODetailBean;
+
+        try {
+            String ssoInfo = getSSOInfo();
+            if (JTextUtils.isJsonObject(ssoInfo)) {
+                mSSODetailBean = JSON.parseObject(ssoInfo, SSODetailBean.class);
+                return mSSODetailBean;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 获取用户详细信息
+     */
+    public static UserInfoResponse getUserInfoResponse() {
+        if (mSSODetailBean != null)
+            return mSSODetailBean.getUserInfoResponse();
+
+        SSODetailBean ssoDetailBean = getSSODetailBean();
+        if (ssoDetailBean == null)
+            return null;
+        return ssoDetailBean.getUserInfoResponse();
+    }
+
+    /**
+     * 获取用户Token信息
+     */
+    public static LoginResponse getLoginResponse() {
+        if (mSSODetailBean != null)
+            return mSSODetailBean.getTokenBean();
+
+        SSODetailBean ssoDetailBean = getSSODetailBean();
+        if (ssoDetailBean == null)
+            return null;
+        return ssoDetailBean.getTokenBean();
+    }
+
+    /**
+     * 获取用户登录信息
+     */
+    public static LoginInfoBean getLoginInfoBean() {
+        if (mSSODetailBean != null)
+            return mSSODetailBean.getLoginInfo();
+
+        SSODetailBean ssoDetailBean = getSSODetailBean();
+        if (ssoDetailBean == null)
+            return null;
+        return ssoDetailBean.getLoginInfo();
+    }
+
+    /**
      * 此方法仅限管控学生登录成功后，将登录信息加密后保存到SD卡中，课堂课外请使用 getSSOInfo
      */
-    public static boolean saveOSSInfo(@NonNull String src) {
+    public static boolean saveOSSInfo(SSODetailBean ssoDetailBean) {
+        mSSODetailBean = ssoDetailBean;
         try {
-            String encrypt = AESUtils.Encrypt(src);
+            String encrypt = AESUtils.Encrypt(JSON.toJSONString(ssoDetailBean));
             save2SDCard(FILE_PATH, FILE_NAME, encrypt);
             return true;
         } catch (Exception e) {

@@ -17,5 +17,7 @@ public interface OkApiHelper {
 
     void sendGet(BaseRequest request);
 
-    void refreshToken(BaseRequest request);
+    void sendPut(BaseRequest request);
+
+    void sendDelete(BaseRequest request);
 }

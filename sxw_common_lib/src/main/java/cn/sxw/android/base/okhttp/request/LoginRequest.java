@@ -1,10 +1,11 @@
-package cn.sxw.android.lib.mvp.model.request;
+package cn.sxw.android.base.okhttp.request;
 
 import android.app.Activity;
 
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.annotation.JSONField;
 
+import cn.sxw.android.base.okhttp.ApiConfig;
 import cn.sxw.android.base.okhttp.BaseRequest;
 import cn.sxw.android.base.okhttp.HttpCallback;
 import cn.sxw.android.base.okhttp.response.LoginResponse;
@@ -30,10 +31,9 @@ public class LoginRequest extends BaseRequest {
 
     /**
      * @param activity
-     * @param api      只传Api名称，适配全局的Scheme和Host，或者通过HttpUrlEncode.encode()组装完整路径
      */
-    public LoginRequest(Activity activity, String api) {
-        super(activity, api);
+    public LoginRequest(Activity activity) {
+        super(activity, ApiConfig.API_LOGIN);
     }
 
     @Override

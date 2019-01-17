@@ -24,14 +24,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import cn.sxw.android.base.event.RefreshTokenFailedEvent;
+import cn.sxw.android.base.account.SAccountUtil;
+import cn.sxw.android.base.bean.LoginInfoBean;
+import cn.sxw.android.base.event.ReLoginEvent;
 import cn.sxw.android.base.net.bean.BaseResponse;
-import cn.sxw.android.base.net.bean.LocalTokenCache;
+import cn.sxw.android.base.okhttp.request.LoginRequest;
 import cn.sxw.android.base.okhttp.request.RefreshTokenRequest;
 import cn.sxw.android.base.okhttp.response.LoginResponse;
+import cn.sxw.android.base.utils.AESUtils;
 import cn.sxw.android.base.utils.JTextUtils;
 import cn.sxw.android.base.utils.LogUtil;
 import cn.sxw.android.base.utils.NetworkUtil;
+import cn.sxw.android.base.utils.SxwMobileSSOUtil;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -86,52 +90,54 @@ public class BaseHttpManagerAdv implements OkApiHelper {
         sendRequest(request);
     }
 
-    private HttpCallback<RefreshTokenRequest, LoginResponse> httpCallback = null;
+    @Override
+    public void sendPut(BaseRequest request) {
+        request.setMethodType(METHOD_PUT);
+        sendRequest(request);
+    }
 
     @Override
-    public void refreshToken(@NonNull BaseRequest lastRequest) {
+    public void sendDelete(BaseRequest request) {
+        request.setMethodType(METHOD_DELETE);
+        sendRequest(request);
+    }
+
+    private void autoRefreshToken(@NonNull BaseRequest lastRequest) {
         if (!lastRequest.isAllowRefreshToken()) {
             LogUtil.methodStepHttp("当前请求已经触发过一次刷新TOKEN的操作了，不能重复触发。");
-            if (httpCallback == null) {
-                // TOKEN刷新失败，且没有主动监听，发送Event信息
-                EventBus.getDefault().post(new RefreshTokenFailedEvent(HttpCode.TOKEN_HAVE_EXPIRED, "Token刷新失败"));
+            if (lastRequest.isAllowAutoLogin()) {
+                autoLoginBackground(lastRequest);
+                lastRequest.setAllowAutoLogin(false);
+            } else {
+                // 告知重新登录
+                LogUtil.methodStepHttp("告知重新登录");
+                EventBus.getDefault().post(new ReLoginEvent());
             }
-            httpCallback = null;
             return;
         }
         // 设置标记，表示当前已经刷新过Token了,防止一直刷的死循环
         lastRequest.setAllowRefreshToken(false);
-        // 设置主动刷新回调
-        if (lastRequest instanceof RefreshTokenRequest) {
-            httpCallback = lastRequest.getHttpCallback();
-        } else {
-            httpCallback = null;
-        }
+        lastRequest.setAllowAutoLogin(true);
 
         RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest(lastRequest);
         refreshTokenRequest.addHeader("TOKEN", HttpManager.getInstance().getRefreshToken());
         refreshTokenRequest.setHttpCallback(new HttpCallback<RefreshTokenRequest, LoginResponse>() {
             @Override
             public void onStart() {
-                if (httpCallback != null)
-                    httpCallback.onStart();
             }
 
             @Override
             public void onResult(RefreshTokenRequest req, LoginResponse loginResponse) {
                 LogUtil.methodStepHttp("刷新TOKEN成功,\n" + JSON.toJSONString(loginResponse));
-                // 缓存TOKEN
-                LocalTokenCache.setLocalCacheToken(loginResponse.getToken());
-                LocalTokenCache.setLocalCacheRefreshToken(loginResponse.getRefreshToken());
                 // 同步TOKEN
-                HttpManager.getInstance().setTokenHeader(loginResponse.getToken());
-                HttpManager.getInstance().setRefreshToken(loginResponse.getRefreshToken());
-                if (!(lastRequest instanceof RefreshTokenRequest)) {
-                    // 重发上一次的请求
-                    sendRequest(lastRequest);
-                } else if (httpCallback != null) {
-                    httpCallback.onResult(req, loginResponse);
-                }
+                SAccountUtil.syncTokenInfo(loginResponse);
+//                if (BuildConfig.DEBUG) {
+//                    LogUtil.methodStepHttp("模拟刷新Token失败，自动重新登录。");
+//                    autoLoginBackground(lastRequest);
+//                    return;
+//                }
+                // 重发上一次的请求
+                sendRequest(lastRequest);
             }
 
             @Override
@@ -139,21 +145,69 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                 LogUtil.methodStepHttp("刷新TOKEN失败");
                 LogUtil.methodStepHttp("code = " + code);
                 LogUtil.methodStepHttp("msg = " + msg);
-                if (httpCallback != null)
-                    httpCallback.onFail(req, code, msg);
-                else {
-                    // TOKEN刷新失败，且没有主动监听，发送Event信息
-                    EventBus.getDefault().post(new RefreshTokenFailedEvent(code, msg));
+                // TODO Token刷新失败，自动重新登录
+                autoLoginBackground(lastRequest);
+            }
+
+            @Override
+            public void onFinish() {
+            }
+        });
+        sendGet(refreshTokenRequest);
+    }
+
+    private void autoLoginBackground(BaseRequest lastRequest) {
+        LoginRequest loginRequest = new LoginRequest(lastRequest.getActivity());
+        LoginInfoBean loginInfoBean = SxwMobileSSOUtil.getLoginInfoBean();
+        if (loginInfoBean == null) {
+            // 告知重新登录
+            LogUtil.methodStepHttp("告知重新登录");
+            EventBus.getDefault().post(new ReLoginEvent());
+            return;
+        } else {
+            loginRequest.setAccount(loginInfoBean.getAccount());
+            try {
+                loginRequest.setPassword(AESUtils.Encrypt(loginInfoBean.getPwd()));
+            } catch (Exception e) {
+                loginRequest.setPassword(loginInfoBean.getPwd());
+            }
+        }
+        loginRequest.setHttpCallback(new HttpCallback<LoginRequest, LoginResponse>() {
+            @Override
+            public void onStart() {
+                // 正在重新登录
+            }
+
+            @Override
+            public void onResult(LoginRequest req, LoginResponse loginResponse) {
+                LogUtil.methodStepHttp("自动重新登录成功,\n" + JSON.toJSONString(loginResponse));
+                // 同步TOKEN
+                SAccountUtil.syncTokenInfo(loginResponse);
+//                if (BuildConfig.DEBUG) {
+//                    lastRequest.setApi("http://www.mocky.io/v2/5c3ea04e350000860a3e98ff");
+//                }
+                // 重发上一次的请求
+                sendRequest(lastRequest);
+            }
+
+            @Override
+            public void onFail(LoginRequest req, int code, String msg) {
+                // 1.账号密码错误 2.用户被禁用 3.用户未注册 4.内部错误
+                if (code == HttpCode.USER_PWD_ERROR || code == HttpCode.USER_FORBIDDEN
+                        || code == HttpCode.UN_REGISTER || code == HttpCode.INNER_ERROR) {
+                    // 当出现以上四种情况时，需要告知重新登录
+                    LogUtil.methodStepHttp("告知重新登录");
+                    EventBus.getDefault().post(new ReLoginEvent());
+                } else {
+                    lastRequest.getHttpCallback().onFail(lastRequest, HttpCode.OTHER_ERROR, "数据加载失败，请重试。");
                 }
             }
 
             @Override
             public void onFinish() {
-                if (httpCallback != null)
-                    httpCallback.onFinish();
+                // 重新登录完成
             }
-        });
-        sendGet(refreshTokenRequest);
+        }).post();
     }
 
     public <V> void sendRequest(BaseRequest req) {
@@ -177,11 +231,11 @@ public class BaseHttpManagerAdv implements OkApiHelper {
 
         new Thread(() -> {
             try {
-                // 发送请求并得到相应
+                // 发送请求并得到相应返回值
                 String response = execute(url, headMap, req.toJson(), methodType);
 
                 // 解析Response
-                if (JTextUtils.isJsonObject(response)) {//是否为Json
+                if (JTextUtils.isJsonObject(response)) {// 是否为Json
                     if (onResultCallback != null) onResultCallback.onResult(response);
 
                     BaseResponse baseResponse = JSON.parseObject(response, BaseResponse.class);
@@ -208,9 +262,15 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                         }
                     } else {
                         int code = baseResponse.getCode();
-                        if (code == HttpCode.TOKEN_HAVE_EXPIRED) {
-                            // Token已过期，在这里刷新Token
-                            refreshToken(req);
+                        if (code == HttpCode.TOKEN_HAVE_EXPIRED// token过期
+                                || code == HttpCode.TOKEN_NOT_FOUND// token未找到
+                                || code == HttpCode.TOKEN_IS_INVALID// token失效
+                                || code == HttpCode.TOKEN_UNKNOWN_ERROR// token未知错误
+                                || code == HttpCode.TOKEN_UNSUPPORTED// token不支持
+                                || code == HttpCode.TOKEN_SIGNATURE_ERROR// token签名错误
+                                ) {
+                            // 当出现上述几种情况时，自动刷新Token
+                            autoRefreshToken(req);
                             return;
                         }
                         if (onResultCallback != null)

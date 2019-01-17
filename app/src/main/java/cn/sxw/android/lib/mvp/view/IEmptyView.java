@@ -17,5 +17,7 @@ public interface IEmptyView extends IViewAdvance {
 
     void onFailed(String msg);
 
+    void onLoginResult(boolean success, String msg);
+
     TextView getTipsTextView();
 }

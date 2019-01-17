@@ -96,8 +96,15 @@ public class HttpManager implements OkApiHelper {
     }
 
     @Override
-    public void refreshToken(BaseRequest request) {
-        mHttp.refreshToken(request);
+    public void sendPut(BaseRequest request) {
+        request.getHeadMap().putAll(globalHeaderMap);
+        mHttp.sendPut(request);
+    }
+
+    @Override
+    public void sendDelete(BaseRequest request) {
+        request.getHeadMap().putAll(globalHeaderMap);
+        mHttp.sendDelete(request);
     }
 
     public HttpManager setRefreshToken(String refreshToken) {

@@ -43,4 +43,6 @@ dependencies {
     // permission 3.1.0
     implementation var.permissionsDispatcher
     annotationProcessor var.permissionsDispatcherProcessor
+    // AndroidAnnotationsPermissionsDispatcherPlugin
+    annotationProcessor "com.github.AleksanderMielczarek:AndroidAnnotationsPermissionsDispatcherPlugin:2.1.1"
 }

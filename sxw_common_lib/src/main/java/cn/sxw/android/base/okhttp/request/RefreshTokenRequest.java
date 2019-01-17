@@ -5,6 +5,7 @@ import android.app.Activity;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.annotation.JSONField;
 
+import cn.sxw.android.base.okhttp.ApiConfig;
 import cn.sxw.android.base.okhttp.BaseRequest;
 import cn.sxw.android.base.okhttp.HttpCallback;
 import cn.sxw.android.base.okhttp.response.LoginResponse;
@@ -16,20 +17,18 @@ import cn.sxw.android.base.okhttp.response.LoginResponse;
  */
 
 public class RefreshTokenRequest extends BaseRequest {
-    private static final String API_REFRESH_TOKEN = "/passport/api/auth/refresh_token";
-
     @JSONField(serialize = false)
     private HttpCallback<RefreshTokenRequest, LoginResponse> httpCallback;
     @JSONField(serialize = false)
     private BaseRequest lastRequest;
 
     public RefreshTokenRequest(Activity activity) {
-        super(activity, API_REFRESH_TOKEN);
+        super(activity, ApiConfig.API_REFRESH_TOKEN);
         this.lastRequest = null;
     }
 
     public RefreshTokenRequest(BaseRequest lastRequest) {
-        super(lastRequest.getActivity(), API_REFRESH_TOKEN);
+        super(lastRequest.getActivity(), ApiConfig.API_REFRESH_TOKEN);
         this.lastRequest = lastRequest;
     }
 

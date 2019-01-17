@@ -1,5 +1,8 @@
 package cn.sxw.android.lib.mvp.ui.activity;
 
+import android.Manifest;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -19,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import cn.sxw.android.base.adapter.CommonRecyclerAdapter;
 import cn.sxw.android.base.bean.BlankBean;
 import cn.sxw.android.base.di.component.AppComponent;
+import cn.sxw.android.base.dialog.CustomDialogHelper;
 import cn.sxw.android.base.imageloader.ImageLoader;
 import cn.sxw.android.base.okhttp.HttpUrlEncode;
 import cn.sxw.android.base.utils.JListKit;
@@ -29,8 +33,13 @@ import cn.sxw.android.lib.di.module.EmptyModule;
 import cn.sxw.android.lib.mvp.base.BaseActivityAdv;
 import cn.sxw.android.lib.mvp.presenter.EmptyPresenter;
 import cn.sxw.android.lib.mvp.view.IEmptyView;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.RuntimePermissions;
 
 @EActivity(R.layout.activity_empty)
+@RuntimePermissions
 public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IEmptyView {
     private ImageLoader mImageLoader;// 用于加载图片的管理类,默认使用glide
     private List<BlankBean> mItems = JListKit.newArrayList();
@@ -59,7 +68,6 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
             R.id.id_btn_get_integer,
             R.id.id_btn_failed,
             R.id.id_btn_error_json,
-            R.id.id_btn_refresh_token,
             R.id.id_btn_bad_gateway,
             R.id.id_btn_login,
             R.id.id_btn_token_expired,
@@ -67,14 +75,11 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
     })
     void onClick(View v) {
         switch (v.getId()) {
-            case R.id.id_btn_refresh_token:
-                mPresenter.forceRefreshToken();
-                break;
             case R.id.id_btn_token_expired:
                 mPresenter.getStringByOkhttp("http://www.mocky.io/v2/5c3eeb293500002d003e9a63");
                 break;
             case R.id.id_btn_login:
-                mPresenter.login();
+                EmptyActivityPermissionsDispatcher.onLoginWithPermissionCheck(EmptyActivity.this);
                 break;
             case R.id.id_btn_get_bean:
                 mPresenter.getObjectByOkhttp("http://www.mocky.io/v2/5c35b8e63000009f0021b4a3");
@@ -151,9 +156,7 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
             mRecyclerView.setAdapter(mAdapter);
             // 设置加载更多能力
             mAdapter.setEnableLoadMore(true);
-            mAdapter.setOnLoadMoreListener(() -> {
-                getDataFromNet();
-            }, mRecyclerView);
+            mAdapter.setOnLoadMoreListener(this::getDataFromNet, mRecyclerView);
             // 默认第一次加载会进入回调，如果不需要可以配置：
             mAdapter.disableLoadMoreIfNotFullPage();
         }
@@ -204,6 +207,16 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
     }
 
     @Override
+    public void onLoginResult(boolean success, String msg) {
+        if (success) {
+            showToast("登录成功。");
+            // TODO 进入指定页面
+        } else {
+            showToast("登录失败，" + msg);
+        }
+    }
+
+    @Override
     public void onFailed(String msg) {
         hideLoading();
         mAdapter.setEnableLoadMore(true);
@@ -231,5 +244,45 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
     @Override
     public TextView getTipsTextView() {
         return tvResponse;
+    }
+
+    @NeedsPermission({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    void onLogin() {
+        mPresenter.login("510101201703290022", "111111");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EmptyActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+    @OnPermissionDenied({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    void onPermissionDenied() {
+        showToast("请授权我们使用你的存储，否则无法登录。");
+    }
+
+    private AlertDialog mNeverAskDialog;
+
+    @OnNeverAskAgain({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    void onNeverAskAgain() {
+        if (mNeverAskDialog == null) {
+            String appName = getString(R.string.app_name);
+            // 申请相机权限时被拒绝了，并且不再询问。
+            mNeverAskDialog =
+                    new AlertDialog.Builder(this)
+                            .setMessage(getString(R.string.permission_tips_never_ask, appName, appName, "存储"))
+                            .setPositiveButton("应用设置", (dialog, button) -> openAppDetailSettings())
+                            .setNegativeButton("取消", (dialog, button) -> showToast("请授权我们使用你的存储，否则无法登录。"))
+                            .show();
+        } else if (!mNeverAskDialog.isShowing()) {
+            mNeverAskDialog.show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        CustomDialogHelper.releaseDialog(mNeverAskDialog);
     }
 }

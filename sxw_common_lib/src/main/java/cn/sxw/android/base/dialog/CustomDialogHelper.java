@@ -19,6 +19,11 @@ import cn.sxw.android.R;
  */
 public class CustomDialogHelper {
 
+    public static void releaseDialog(AlertDialog alertDialog) {
+        dismissDialog(alertDialog);
+        alertDialog = null;
+    }
+
     public static void dismissDialog(AlertDialog alertDialog) {
         try {
             if (alertDialog != null && alertDialog.isShowing())

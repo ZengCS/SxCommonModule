@@ -71,11 +71,6 @@
                     android:layout_height="wrap_content"
                     android:text="模拟TOKEN过期" />
 
-                <Button
-                    android:id="@+id/id_btn_refresh_token"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="强制刷新TOKEN" />
             </LinearLayout>
 
             <LinearLayout

@@ -29,7 +29,9 @@ public abstract class BaseRequest {
     @JSONField(serialize = false)
     private int methodType = OkApiHelper.METHOD_UNKNOWN;
     @JSONField(serialize = false)
-    private boolean allowRefreshToken = true;
+    private boolean allowRefreshToken = true;// 是否可以刷新token
+    @JSONField(serialize = false)
+    private boolean allowAutoLogin = true;// 是否可以自动登录
 
     protected abstract <T, V> HttpCallback<T, V> getHttpCallback();
 
@@ -91,16 +93,20 @@ public abstract class BaseRequest {
         this.typeReference = typeReference;
     }
 
-    public void postData() {
+    public void post() {
         HttpManager.getInstance().sendPost(this);
     }
 
-    public void getData() {
+    public void get() {
         HttpManager.getInstance().sendGet(this);
     }
 
-    public void refreshToken(){
-        HttpManager.getInstance().refreshToken(this);
+    public void put() {
+        HttpManager.getInstance().sendPut(this);
+    }
+
+    public void delete() {
+        HttpManager.getInstance().sendDelete(this);
     }
 
     public String toJson() {
@@ -121,5 +127,13 @@ public abstract class BaseRequest {
 
     public void setAllowRefreshToken(boolean allowRefreshToken) {
         this.allowRefreshToken = allowRefreshToken;
+    }
+
+    public boolean isAllowAutoLogin() {
+        return allowAutoLogin;
+    }
+
+    public void setAllowAutoLogin(boolean allowAutoLogin) {
+        this.allowAutoLogin = allowAutoLogin;
     }
 }
