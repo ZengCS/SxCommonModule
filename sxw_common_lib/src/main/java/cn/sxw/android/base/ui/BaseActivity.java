@@ -26,7 +26,7 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
     private static final String LAYOUT_LINEARLAYOUT = "LinearLayout";
     private static final String LAYOUT_FRAMELAYOUT = "FrameLayout";
     private static final String LAYOUT_RELATIVELAYOUT = "RelativeLayout";
-    private static final String LAYOUT_CONSTRAINTLAYOUT = "ConstraintLayout";
+    private static final String LAYOUT_CONSTRAINTLAYOUT = "android.support.constraint.ConstraintLayout";
     public static final String IS_NOT_ADD_ACTIVITY_LIST = "is_add_activity_list";//是否加入到activity的list，管理
 
     public BaseApplication mApplication;
