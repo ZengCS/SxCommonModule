@@ -4,10 +4,10 @@ import android.Manifest;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Toast;
 
+import cn.sxw.android.base.dialog.CustomDialogHelper;
 import cn.sxw.android.lib.R;
 import cn.sxw.android.lib.ui.base.CustomBaseActivity;
 import permissions.dispatcher.NeedsPermission;
@@ -52,13 +52,23 @@ public class PermissionActivity extends CustomBaseActivity {
 
     @OnNeverAskAgain(Manifest.permission.CAMERA)
     void neverAskForCamera() {
-        // 申请相机权限时被拒绝了，并且不再询问。
-        new AlertDialog.Builder(this)
-                .setMessage(getString(R.string.permission_tips_never_ask, "晓我课堂", "晓我课堂", "相机"))
-                .setPositiveButton("应用设置", (dialog, button) -> openAppDetailSettings())
-                .setNegativeButton("取消", (dialog, button) -> {
-                    // do nothing
-                })
-                .show();
+        String mAppName = getString(R.string.app_name);
+        // 申请权限时被拒绝了，并且不再询问。
+        CustomDialogHelper.DialogParam dialogParam = new CustomDialogHelper.DialogParam();
+        dialogParam.setTitle("授权被拒绝");
+        dialogParam.setMessage(getString(R.string.permission_tips_never_ask, mAppName, mAppName, "[存储/手机信息]"));
+        dialogParam.setPositiveBtnText("应用设置");
+        dialogParam.setNegativeBtnText("退出");
+        CustomDialogHelper.showCustomConfirmDialog(this, dialogParam, new CustomDialogHelper.NativeDialogCallback() {
+            @Override
+            public void onConfirm() {
+                openAppDetailSettings();
+            }
+
+            @Override
+            public void onCancel() {
+                finish();
+            }
+        });
     }
 }
