@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.zhy.autolayout.AutoLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <com.zhy.autolayout.AutoRelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:selectableItemBackground"
@@ -18,7 +18,7 @@
             android:background="@color/mGrayD7"
             android:scaleType="centerCrop" />
 
-        <LinearLayout
+        <com.zhy.autolayout.AutoLinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -41,7 +41,7 @@
                 android:text="Desc"
                 android:textSize="26px" />
 
-        </LinearLayout>
+        </com.zhy.autolayout.AutoLinearLayout>
 
         <TextView
             android:id="@+id/id_view_new"
@@ -60,10 +60,10 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:text="按钮" />
-    </RelativeLayout>
+    </com.zhy.autolayout.AutoRelativeLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
         android:background="@color/mGrayE4" />
-</LinearLayout>
+</com.zhy.autolayout.AutoLinearLayout>
