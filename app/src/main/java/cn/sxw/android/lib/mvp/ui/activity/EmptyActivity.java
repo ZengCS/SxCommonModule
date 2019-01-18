@@ -1,7 +1,6 @@
 package cn.sxw.android.lib.mvp.ui.activity;
 
 import android.Manifest;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -79,7 +78,8 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
                 mPresenter.getStringByOkhttp("http://www.mocky.io/v2/5c3eeb293500002d003e9a63");
                 break;
             case R.id.id_btn_login:
-                EmptyActivityPermissionsDispatcher.onLoginWithPermissionCheck(EmptyActivity.this);
+                // EmptyActivityPermissionsDispatcher.onLoginWithPermissionCheck(EmptyActivity.this);
+                onLogin();
                 break;
             case R.id.id_btn_get_bean:
                 mPresenter.getObjectByOkhttp("http://www.mocky.io/v2/5c35b8e63000009f0021b4a3");
@@ -251,11 +251,11 @@ public class EmptyActivity extends BaseActivityAdv<EmptyPresenter> implements IE
         mPresenter.login("510101201703290022", "111111");
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EmptyActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        EmptyActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+//    }
 
     @OnPermissionDenied({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
     void onPermissionDenied() {

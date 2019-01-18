@@ -268,7 +268,7 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                                 || code == HttpCode.TOKEN_UNKNOWN_ERROR// token未知错误
                                 || code == HttpCode.TOKEN_UNSUPPORTED// token不支持
                                 || code == HttpCode.TOKEN_SIGNATURE_ERROR// token签名错误
-                                ) {
+                        ) {
                             // 当出现上述几种情况时，自动刷新Token
                             autoRefreshToken(req);
                             return;
@@ -381,19 +381,22 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                 break;
         }
 
-        StringBuilder stringBuilder = new StringBuilder();
-
         if (headMap == null)
             headMap = new HashMap<>();
         // 设置全局Request-ID
         String requestId = System.nanoTime() + "" + (int) (Math.random() * 9000 + 1000);
         headMap.put("Request-Id", requestId);
         // ********* Log打印Header参数 *********
+        LogUtil.methodStepHttp("↓↓↓↓↓↓ HEADERS ↓↓↓↓↓↓");
         for (String key : headMap.keySet()) {
+            if ("token".equalsIgnoreCase(key) && url.contains("api/auth/login")) {
+                LogUtil.methodStepHttp("当前是登录，无需TOKEN");
+                continue;
+            }
             requestBuilder.addHeader(key, headMap.get(key));
-            stringBuilder.append("\n* --> ").append(key).append(" = ").append(headMap.get(key));
+            LogUtil.methodStepHttp(key + " = " + headMap.get(key));
         }
-        LogUtil.methodStepHttp("HEADERS" + stringBuilder.toString());
+        LogUtil.methodStepHttp("↑↑↑↑↑↑ HEADERS ↑↑↑↑↑↑");
 
         Response response = httpClient.newCall(requestBuilder.build()).execute();
         ResponseBody body = response.body();

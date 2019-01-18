@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import cn.sxw.android.base.account.SAccountUtil;
 import cn.sxw.android.base.bean.BlankBean;
 import cn.sxw.android.base.bean.LoginInfoBean;
 import cn.sxw.android.base.bean.user.UserInfoResponse;
@@ -215,6 +216,7 @@ public class EmptyPresenter extends BasePresenter<IEmptyModel, IEmptyView> {
             public void onResult(LoginRequest req, LoginResponse loginResponse) {
                 // TODO 登录成功后，读取用户详细信息
                 LoginInfoBean loginInfoBean = new LoginInfoBean(account, pwd);
+                SAccountUtil.syncTokenInfo(loginResponse);
                 findUserInfo(loginInfoBean, loginResponse);
             }
 
