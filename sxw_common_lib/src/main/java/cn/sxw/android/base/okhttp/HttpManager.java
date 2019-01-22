@@ -18,6 +18,7 @@ public class HttpManager implements OkApiHelper {
     private Map<String, String> globalHeaderMap = new HashMap<>();// 全局Header
     private String host;
     private String scheme = "http";
+    private long timeout = 15 * 1000;// 默认15秒超时时间
     // 用于刷新Token
     private String refreshToken;
 
@@ -114,5 +115,14 @@ public class HttpManager implements OkApiHelper {
 
     public String getRefreshToken() {
         return refreshToken;
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public HttpManager setTimeout(long timeout) {
+        this.timeout = timeout;
+        return this;
     }
 }

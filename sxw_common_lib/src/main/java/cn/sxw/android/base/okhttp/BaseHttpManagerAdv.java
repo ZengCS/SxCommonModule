@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -308,6 +309,11 @@ public class BaseHttpManagerAdv implements OkApiHelper {
                         mHandler.post(() -> callback.onFail(null, HttpCode.JSON_ERROR, "数据格式不正确!"));
                     }
                 }
+            } catch (SocketTimeoutException e) {
+                e.printStackTrace();
+                if (canCallback(activity, callback)) {
+                    mHandler.post(() -> callback.onFail(null, HttpCode.SOCKET_TIMEOUT, "接口访问超时！"));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 if (canCallback(activity, callback)) {
@@ -345,9 +351,9 @@ public class BaseHttpManagerAdv implements OkApiHelper {
     }
 
     private OkHttpClient httpClient = new OkHttpClient.Builder()
-            .connectTimeout(15000, TimeUnit.MILLISECONDS)
-            .readTimeout(15000, TimeUnit.MILLISECONDS)
-            // .writeTimeout(15000, TimeUnit.MILLISECONDS)
+            .connectTimeout(HttpManager.getInstance().getTimeout(), TimeUnit.MILLISECONDS)
+            .readTimeout(HttpManager.getInstance().getTimeout(), TimeUnit.MILLISECONDS)
+            // .writeTimeout(15*1000, TimeUnit.MILLISECONDS)
             // 禁用缓存
             // .cache(new Cache(BaseApplication.getContext().getCacheDir(), 10 * 1024 * 1024))
             .build();

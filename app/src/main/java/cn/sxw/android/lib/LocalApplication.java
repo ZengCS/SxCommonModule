@@ -22,6 +22,7 @@ public class LocalApplication extends BaseApplication {
         HttpManager.getInstance()
                 .setTokenHeader(LocalTokenCache.getLocalCacheToken())
                 .setRefreshToken(LocalTokenCache.getLocalCacheRefreshToken())
+                .setTimeout(10 * 1000)
                 .setScheme("http")// 默认是http，如果使用https时，必须设置
                 .setHost(host);// 这里不要写 http://
 

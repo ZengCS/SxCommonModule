@@ -38,7 +38,10 @@ public interface HttpCode {
     int NO_DATA = -5;
 
     // 其他错误
-    int OTHER_ERROR = -6;
+    int SOCKET_TIMEOUT = -6;
+
+    // 其他错误
+    int OTHER_ERROR = -7;
 
     // 用户名或者密码错误
     int USER_PWD_ERROR = 8072401;
