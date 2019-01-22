@@ -6,7 +6,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.annotation.JSONField;
 
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,6 +23,8 @@ public abstract class BaseRequest {
     @JSONField(serialize = false)
     private HashMap<String, String> headMap;// Http Header 参数列表
     @JSONField(serialize = false)
+    private Activity activity;// 1.提供Context 2.验证是否需要回调
+    @JSONField(serialize = false)
     private TypeReference typeReference;// 用于FastJson反序列化
     @JSONField(serialize = false)
     private int methodType = OkApiHelper.METHOD_UNKNOWN;
@@ -31,37 +32,13 @@ public abstract class BaseRequest {
     private boolean allowRefreshToken = true;// 是否可以刷新token
     @JSONField(serialize = false)
     private boolean allowAutoLogin = true;// 是否可以自动登录
-    // 将Activity设置为弱引用,解决内存泄漏问题
-    @JSONField(serialize = false)
-    private WeakReference<Activity> activityWeakReference;
-    @JSONField(serialize = false)
-    private Activity activity = null;
-
-    public BaseRequest(Activity activity, String api) {
-        if (activity != null)
-            activityWeakReference = new WeakReference<>(activity);
-        this.api = api;
-    }
-
-    /**
-     * @return 得到当前关联的Activity
-     */
-    public Activity getActivity() {
-        if (activityWeakReference == null)
-            return null;
-        try {
-            return activityWeakReference.get();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public void setActivity(Activity activity) {
-//        this.activity = activity;
-    }
 
     protected abstract <T, V> HttpCallback<T, V> getHttpCallback();
+
+    public BaseRequest(Activity activity, String api) {
+        this.activity = activity;
+        this.api = api;
+    }
 
     public String getApi() {
         try {
@@ -98,6 +75,14 @@ public abstract class BaseRequest {
         if (headMap == null)
             headMap = new HashMap<>();
         return headMap;
+    }
+
+    public Activity getActivity() {
+        return activity;
+    }
+
+    public void setActivity(Activity activity) {
+        this.activity = activity;
     }
 
     public TypeReference getTypeReference() {

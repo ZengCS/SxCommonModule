@@ -4,8 +4,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import cn.sxw.android.base.ui.BaseApplication;
-
 /**
  * Created by Alex.Tang on 2017-07-11.
  */
@@ -15,8 +13,6 @@ public class NetworkUtil {
     }
 
     public static boolean isNetworkAvailable(Context context) {
-        if (context == null)
-            context = BaseApplication.getContext();
         ConnectivityManager cm = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) {
@@ -40,8 +36,6 @@ public class NetworkUtil {
      * mConnectivityManager.TYPE_WIFI wifi 1
      */
     public static boolean isConnected(Context context) {
-        if (context == null)
-            context = BaseApplication.getContext();
         String service = Context.CONNECTIVITY_SERVICE;
         ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(service);
         if (mConnectivityManager == null)
@@ -62,8 +56,6 @@ public class NetworkUtil {
      * @return
      */
     public static boolean isWIFI(Context context) {
-        if (context == null)
-            context = BaseApplication.getContext();
         String service = Context.CONNECTIVITY_SERVICE;
         ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(service);
         NetworkInfo oNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
