@@ -351,8 +351,8 @@ public class BaseHttpManagerAdv implements OkApiHelper {
     }
 
     private OkHttpClient httpClient = new OkHttpClient.Builder()
-            .connectTimeout(HttpManager.getInstance().getTimeout(), TimeUnit.MILLISECONDS)
-            .readTimeout(HttpManager.getInstance().getTimeout(), TimeUnit.MILLISECONDS)
+            .connectTimeout(15 * 1000, TimeUnit.MILLISECONDS)
+            .readTimeout(15 * 1000, TimeUnit.MILLISECONDS)
             // .writeTimeout(15*1000, TimeUnit.MILLISECONDS)
             // 禁用缓存
             // .cache(new Cache(BaseApplication.getContext().getCacheDir(), 10 * 1024 * 1024))
